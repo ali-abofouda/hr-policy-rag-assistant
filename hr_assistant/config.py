@@ -8,8 +8,13 @@ import os
 from typing import List, Tuple
 from dotenv import load_dotenv
 
-# Load secrets and overrides from local .env file
-load_dotenv()
+# Load secrets and overrides from local project .env file
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_LOCAL_ENV = os.path.join(_PROJECT_ROOT, ".env")
+if os.path.exists(_LOCAL_ENV):
+    load_dotenv(dotenv_path=_LOCAL_ENV)
+else:
+    load_dotenv()
 
 ## ---------------------------------------------------------------------------
 ## 1. Google Cloud Platform & Core Settings
