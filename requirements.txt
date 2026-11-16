@@ -1,0 +1,33 @@
+python-dotenv
+
+# Orchestration
+langchain>=1.0,<2
+langchain-core>=1.0,<2
+langchain-community
+langchain-text-splitters
+langgraph>=0.2
+
+# LLM Providers (Vertex AI Gemini & Groq fallback)
+langchain-google-genai
+langchain-groq
+
+# Vector Store - Qdrant (dense + sparse/BM25 hybrid)
+langchain-qdrant
+qdrant-client
+fastembed
+
+# Document Ingestion - Cloud Storage + Multi-format parsing (PDF, DOCX, PPTX)
+google-cloud-storage
+pypdf
+python-docx
+python-pptx
+
+# Jina Embeddings & Re-ranker (Direct REST calls)
+requests
+
+# Web Interface
+streamlit
+
+# Local Visual Debugger & Telemetry
+langgraph-cli[inmem]
+langsmith
