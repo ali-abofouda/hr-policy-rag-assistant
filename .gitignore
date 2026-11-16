@@ -1,6 +1,7 @@
 # Environment and virtualenv
 .env
 .venv
+hrrenv/
 env/
 venv/
 ENV/
