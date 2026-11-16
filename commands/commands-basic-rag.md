@@ -1,134 +1,86 @@
-# Commands — `basic-rag` branch, direct copy-paste
+# Commands — `basic-rag` branch (Local & Cloud Options)
 
-Stage 1 of 3. The plain RAG pipeline only: retrieval → hybrid search →
-re-rank → agent → cited answer. **No** Model Armor, **no** OAuth, **no**
-Cloud Run, **no** LiteLLM router, **no** eval/red-team — those come in
-`security` and `deployment`.
-
-Real values below. Shell: Git Bash (matches `hrrenv/Scripts/activate`).
-Gitignored — never committed.
+Stage 1 of 3: Plain RAG pipeline only:
+Ingestion → Hybrid Search (Dense + BM25) → Cross-Encoder Re-rank → LangGraph Agent → Cited Answer.
 
 ---
 
-## Values used on this branch
+## المسار الأول (الموصى به): التشغيل المجاني 100% محلياً (Zero-Cost / No GCP Billing)
 
+هذا المسار يعمل بالكامل على جهازك دون الحاجة لحساب فوترة على Google Cloud أو كروت بنكية:
+
+### 1. إعداد بيئة بايثون وتثبيت المكتبات
 ```bash
-PROJECT_ID=rag-hr-assistant-demo
-PROJECT_NUMBER=56481199
-REGION=us-central1
-LOCATION=us-central1
-GCS_BUCKET_NAME=rag-hr-assistant-demo-hr-policies
-BILLING_ACCOUNT_ID=01F83E-4931F0-126013
-QDRANT_COLLECTION_NAME=hr_policies
-QDRANT_NOISY_COLLECTION_NAME=hr_policies_noisy_demo
-```
-
-`JINA_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY` are real secrets — get your
-own from **jina.ai** and **cloud.qdrant.io** (both free tier), put them in
-`.env`. They never get typed into any command.
-
----
-
-## 1. GCP project + billing (skip if the project already exists)
-
-```bash
-gcloud auth login
-
-# See your billing account ID
-gcloud billing accounts list
-
-# Create the project
-gcloud projects create $PROJECT_ID --name="RAG HR Assistant Demo"
-
-# Link billing — nothing chargeable works without this
-gcloud billing projects link $PROJECT_ID --billing-account=$BILLING_ACCOUNT_ID
-
-# Make it the default for every command below
-gcloud config set project $PROJECT_ID
-```
-
-## 2. Point local credentials at the project
-
-```bash
-gcloud auth application-default login
-gcloud auth application-default set-quota-project $PROJECT_ID
-```
-
-## 3. Enable the two APIs this branch needs
-
-```bash
-gcloud services enable aiplatform.googleapis.com storage.googleapis.com --project=$PROJECT_ID
-
-# Confirm
-gcloud services list --enabled --project=$PROJECT_ID \
-  --filter="config.name:(aiplatform.googleapis.com OR storage.googleapis.com)" \
-  --format="value(config.name)"
-```
-
-- `aiplatform.googleapis.com` — Vertex AI, the Gemini model.
-- `storage.googleapis.com` — Cloud Storage, holds the raw HR documents.
-
-## 4. Create the Cloud Storage bucket
-
-```bash
-gcloud storage buckets create gs://$GCS_BUCKET_NAME \
-  --project=$PROJECT_ID \
-  --location=$REGION
-
-# Confirm
-gcloud storage buckets describe gs://$GCS_BUCKET_NAME --format="value(name,location)"
-```
-
-`ingest.py` uploads `data/` into this bucket — you don't upload manually.
-
-## 5. Python environment
-
-```bash
+# إنشاء وتفعيل البيئة
 uv venv hrrenv
-source hrrenv/Scripts/activate       # Git Bash / macOS / Linux
+# تفعيل البيئة على ويندوز:
+hrrenv\Scripts\activate
+# تثبيت المتطلبات:
 uv pip install -r requirements.txt
 ```
 
-## 6. `.env`
-
+### 2. تجهيز ملف المتغيرات البيئية `.env`
 ```bash
 cp .env.example .env
 ```
+املأ فقط المفاتيح المجانية في `.env`:
+* `JINA_API_KEY`: مجاني من https://jina.ai (تسجيل بـ GitHub يعطيك 1,000,000 توكن مجاناً).
+* `QDRANT_URL` و `QDRANT_API_KEY`: مجاني من https://cloud.qdrant.io (كلاستر مجاني دائم بدون فيزا).
+* `GEMINI_API_KEY`: مجاني من https://aistudio.google.com أو استخدم `GROQ_API_KEY`.
+* `LANGSMITH_API_KEY`: اختياري للمراقبة المجانية من https://smith.langchain.com.
 
-Fill in: `PROJECT_ID`, `LOCATION`, `GCS_BUCKET_NAME`, `JINA_API_KEY`,
-`QDRANT_URL`, `QDRANT_API_KEY`. `config.py` reads `.env` automatically via
-`python-dotenv` — no other wiring.
-
-## 7. Ingest the corpus into Qdrant
-
+### 3. تشغيل خط استيعاب البيانات وفهرسة المتجهات (Local Ingestion)
 ```bash
-# local data/ -> GCS raw/ -> GCS processed/ -> chunk -> embed -> Qdrant
-# Builds BOTH collections (hr_policies + hr_policies_noisy_demo).
-# Idempotent — skips a collection that already has data.
+# قراءة اللوائح المحلية وفهرستها في Qdrant مباشرة:
+python ingest.py --hr-only
+```
+
+### 4. تشغيل التطبيق التفاعلي (Web Chat UI)
+```bash
+# تشغيل واجهة المستخدم عبر Streamlit:
+streamlit run app.py
+
+# أو تجربة الكونسول السريع (CLI Demo):
+python main.py
+```
+
+---
+
+## المسار الثاني: التشغيل السحابي عبر Google Cloud (اختياري للشركات)
+
+هذا المسار مخصص لمن يمتلك حساب Google Cloud مفعل عليه الفوترة (Enterprise / Credit Card):
+
+### 1. تهيئة مشروع Google Cloud
+```bash
+PROJECT_ID=rag-hr-assistant-demo
+REGION=us-central1
+GCS_BUCKET_NAME=rag-hr-assistant-demo-hr-policies
+BILLING_ACCOUNT_ID=YOUR_BILLING_ACCOUNT_ID
+
+# تسجيل الدخول وتحديد المشروع
+gcloud auth login
+gcloud projects create $PROJECT_ID --name="RAG HR Assistant Demo"
+gcloud billing projects link $PROJECT_ID --billing-account=$BILLING_ACCOUNT_ID
+gcloud config set project $PROJECT_ID
+
+# تفعيل تصاريح التطبيقات (ADC)
+gcloud auth application-default login
+gcloud auth application-default set-quota-project $PROJECT_ID
+
+# تفعيل خدمات Vertex AI و Cloud Storage
+gcloud services enable aiplatform.googleapis.com storage.googleapis.com --project=$PROJECT_ID
+
+# إنشاء حاوية التخزين السحابي
+gcloud storage buckets create gs://$GCS_BUCKET_NAME --project=$PROJECT_ID --location=$REGION
+```
+
+### 2. استيعاب البيانات ورفعها إلى السحابة
+```bash
 python ingest.py
-
-# Rebuild from scratch, or limit scope:
-python ingest.py --force
-python ingest.py --hr-only        # skip the noisy/mixed collection
-python ingest.py --noisy-only     # skip the clean collection
 ```
 
-## 8. Run it
+---
 
-```bash
-python main.py                    # CLI demo — a few questions through the agent
-streamlit run app.py              # chat UI at http://localhost:8501
-langgraph dev                     # LangGraph Studio — inspect the agent graph
-python -m hr_assistant.tracing    # confirm LangSmith tracing (if LANGSMITH_TRACING=true)
-```
-
-## Cost note
-
-Vertex AI Gemini Flash and Jina are pay-per-call at near-zero volume for
-local dev. Qdrant Cloud and Jina free tiers cover this easily. Nothing on
-this branch runs standing infrastructure.
-
-## If something breaks
-
-See `docs/17-troubleshooting.md`. Most common on this branch: a Qdrant
-collection missing (`Run python ingest.py`) or the Jina key not set.
+## ملاحظات استكشاف الأخطاء (Troubleshooting)
+* إذا ظهر خطأ في الاتصال بـ Qdrant: تأكد من صحة الرابط والـ API Key في `.env`.
+* إذا لم تكن مسجلاً في Google Cloud: استخدم المسار الأول (Local Ingestion) لتفادي خطأ `OR_BACR2_59`.
