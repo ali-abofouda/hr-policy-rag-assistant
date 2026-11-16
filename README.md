@@ -1,6 +1,22 @@
-# Section 30: HR Policy RAG Assistant with Enterprise AI Security
+# HR Policy RAG Assistant with Enterprise AI Security
 
-An end-to-end, enterprise-grade Retrieval-Augmented Generation (RAG) assistant designed for Human Resources policy resolution in corporate multi-national environments. Engineered with defense-in-depth security, adversarial resilience, multi-model routing via a self-hosted gateway, and cloud containerization.
+An end-to-end, enterprise-grade Retrieval-Augmented Generation (RAG) assistant designed for Human Resources policy resolution in corporate multi-national environments. Engineered with defense-in-depth security, adversarial resilience, multi-model routing, and cloud-native containerization.
+
+---
+
+## Architectural Evolution and Execution Modes
+
+The project is architected with a **Dual Pipeline Design**, allowing developers to run either a 100% free offline local pipeline or an enterprise cloud-native deployment:
+
+### 1. Local-First Zero-Cost Pipeline (Active Default)
+- **Local Multi-Format Ingestion**: Ingests official HR text policies alongside multi-format distractor documents (`.pdf`, `.docx`, `.pptx`, `.txt`) directly from local storage (`data/policies` and `data/noise`).
+- **Parse Once to JSON Pattern**: Converts heavy binary documents into intermediate structured JSON records inside `data/processed/`. Downstream indexing reads clean JSON, preventing redundant parsing.
+- **Cost-Free Cloud & Local Compute**: Connects to Qdrant Cloud Free Tier for vector storage, Jina AI free credits for embeddings/re-ranking (with local `sentence-transformers/all-MiniLM-L6-v2` offline fallback), and Google AI Studio / Groq LPU for LLM inference.
+- **Zero Cloud Billing Requirement**: Bypasses Google Cloud Platform (GCP) billing barriers, enabling offline experimentation and CI/CD testing without cloud infrastructure charges.
+
+### 2. Google Cloud Storage (GCS) Pipeline (Enterprise Reference)
+- **Cloud-Native Storage Hierarchy**: Preserves full architectural logic for GCP Cloud Storage buckets partitioned into `raw/` and `processed/` zones (`raw-hr-policies`, `raw-other-data`, `processed-hr-policies`, `processed-other-data`).
+- **Documented & Ready for Production**: Code for GCS blob streaming and upload is preserved and documented in `hr_assistant/processor.py` and `hr_assistant/document_loader.py`, ready to be activated when enterprise GCP service account credentials and billing are attached.
 
 ---
 
@@ -8,19 +24,20 @@ An end-to-end, enterprise-grade Retrieval-Augmented Generation (RAG) assistant d
 
 1. **Enterprise Identity & Access Management (IAM)**:
    - Google OAuth 2.0 integration with role-based access control (RBAC), strictly white-listing authorized employee email identities.
-2. **Self-Hosted AI Gateway (`LiteLLM`)**:
-   - Containerized proxy abstracting multi-provider LLM endpoints, enabling dynamic failover, load balancing, budget controls, and latency observability.
-3. **Robust Retrieval in Noisy Databases**:
-   - Qdrant Vector Store populated with official HR policies alongside deliberately injected background noise.
-   - Multi-stage retrieval pipeline coupling semantic dense search with high-precision Cross-Encoder Re-ranking.
-4. **Multi-Layer Defense & Model Armor**:
-   - Strict out-of-domain query rejection (refusing non-HR tasks).
-   - Jailbreak and prompt injection mitigation protecting system prompts against persona override and roleplay escapes.
-   - Comprehensive Red Teaming evaluation suite verifying 100% adversarial attack neutralization prior to deployment.
-5. **Cost & Latency Optimization**:
-   - Semantic Caching layer intercepting high-frequency employee queries to deliver sub-millisecond responses without downstream inference cost.
-6. **Explainability & Verification**:
-   - Guaranteed source document and clause citations on all generated employee responses.
+2. **Hybrid Retrieval with High-Precision Re-Ranking**:
+   - Hybrid dense vector search (Jina 768-dim embeddings) coupled with sparse lexical search (BM25 via FastEmbed) in Qdrant Cloud.
+   - Deterministic point IDs (`UUID5`) ensuring idempotent upserts without duplicate records.
+   - Cross-Encoder Re-ranking (`jina-reranker-v2-base-multilingual`) filtering out false-positive noise chunks.
+3. **Multi-Layer Defense & AI Security Guardrails**:
+   - Strict out-of-domain rejection preventing non-HR query processing.
+   - Google Model Armor and system prompt isolation neutralizing prompt injection and jailbreak attacks.
+   - Red Teaming evaluation suite verifying adversarial attack mitigation.
+4. **Self-Hosted AI Gateway (`LiteLLM`)**:
+   - Containerized proxy abstracting multi-provider LLM endpoints, enabling dynamic failover, rate limiting, and cost observability.
+5. **Semantic Caching**:
+   - Caching layer intercepting high-frequency employee queries to deliver sub-millisecond responses without downstream inference cost.
+6. **Verifiable Explanations**:
+   - Source document, policy category, and clause citations on all generated employee responses.
 
 ---
 
@@ -28,26 +45,86 @@ An end-to-end, enterprise-grade Retrieval-Augmented Generation (RAG) assistant d
 
 ```text
 01-hr-policy-rag-assistant/
-├── README.md               # Architecture specification and execution manual
-├── config/                 # YAML and Pydantic configuration schemas
+├── README.md               # Architecture specification and manual
+├── requirements.txt        # Pinned project dependencies
+├── .env.example            # Environment template
+├── commands/
+│   └── commands-basic-rag.md # Local-first execution and testing commands
+├── hr_assistant/           # Core production package
+│   ├── __init__.py
+│   ├── config.py           # Centralized settings and environment validation
+│   ├── logging_config.py   # Process-wide logging configuration
+│   ├── prompts.py          # System prompts and behavioral guidelines
+│   ├── document_loader.py  # Local and cloud document loaders (LangChain Documents)
+│   ├── processor.py        # Multi-format binary parser (.pdf, .docx, .pptx, .txt)
+│   ├── splitter.py         # Recursive character text chunking (500/60 overlap)
+│   ├── embeddings.py       # Jina AI embeddings with local MiniLM fallback
+│   └── vector_store.py     # Qdrant hybrid vector store, stable IDs, payload index
 ├── data/
-│   ├── policies/           # Official HR policy documents (Leave, Resignation, Maternity)
-│   └── noise/              # Synthetic distractor documents simulating enterprise noise
-├── src/
-│   ├── ingestion/          # Document loading, semantic chunking, and Qdrant ingestion
-│   ├── retrieval/          # Dense vector search, hybrid retrieval, and Cross-Encoder re-rankers
-│   ├── security/           # Guardrails, prompt sanitization, and semantic caching
-│   ├── agent/              # LangGraph stateful workflow coordinator and decision graphs
-│   └── evaluation/         # Red Teaming adversarial attack harness and RAG triad evals
-├── notebooks/              # Modular step-by-step interactive research notebooks
-├── tests/                  # Automated integration, security, and unit test suites
-└── Dockerfile              # Production container build manifest for Google Cloud Run
+│   ├── policies/           # 10 official HR policy documents (.txt)
+│   ├── noise/              # 8 synthetic enterprise distractor files (.pdf, .docx, .pptx, .txt)
+│   └── processed/          # Pre-parsed JSON records (hr-policies/ and other-data/)
+├── tests/                  # Automated unit and integration test suites
+│   └── test_splitter_and_vectorstore.py
+└── hrrenv/                 # Isolated Python 3.12 virtual environment
 ```
 
 ---
 
-## Project Execution Lifecycle
+## Quickstart Guide
 
-- **Phase 1: Local Hybrid RAG (Lectures 142 - 151)**: Ingestion, noisy Qdrant vector store, Cross-Encoder re-ranking, and LangGraph agent workflow.
-- **Phase 2: LLM Security & Evals (Lectures 152 - 159)**: Self-hosted LiteLLM gateway, Google Model Armor guardrails, semantic caching, and Red Teaming verification.
-- **Phase 3: Production Deployment (Lectures 160 - 163)**: Docker containerization and deployment onto Google Cloud Run.
+### 1. Environment Setup
+
+Clone the repository and set up a Python 3.12 virtual environment:
+
+```bash
+cd projects/01-rag-applications/01-hr-policy-rag-assistant
+python -m venv hrrenv
+.\hrrenv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment Variables
+
+Copy `.env.example` to `.env` and fill in your free API credentials:
+
+```bash
+cp .env.example .env
+```
+
+Required keys:
+- `JINA_API_KEY`: Free 1M tokens from [jina.ai](https://jina.ai).
+- `QDRANT_URL` and `QDRANT_API_KEY`: Free cluster from [cloud.qdrant.io](https://cloud.qdrant.io).
+- `GEMINI_API_KEY`: Free tier key from Google AI Studio.
+
+### 3. Parse Raw Documents (Parse Once to JSON)
+
+Execute local multi-format parsing across all policies and noise files:
+
+```bash
+python -c "from hr_assistant.processor import process_raw_to_json; print('Processed files:', process_raw_to_json())"
+```
+
+### 4. Run Unit Tests
+
+Execute the automated test suite:
+
+```bash
+python -m unittest discover -s tests
+```
+
+---
+
+## Course Roadmap Alignment
+
+- **Phase 1: Basic RAG (Lectures 142 - 151)** `[Branch: basic-rag]`:
+  - 142: Architecture & Live System Overview
+  - 143: 3-Phase Evolution Roadmap
+  - 144: Local Hybrid RAG & Data Engineering
+  - 145: Configuration Management
+  - 146: Document Loading & Multi-format Processing
+  - 147: Document Chunking, Embeddings & Qdrant Hybrid Vector Store
+  - 148 - 149: Ingestion Pipeline & Corpus Population
+  - 150 - 151: Re-ranker, Guardrails & Retrieval Pipeline
+- **Phase 2: Enterprise AI Security & Evals (Lectures 152 - 159)** `[Branch: ai-security]`
+- **Phase 3: Production Cloud Deployment (Lectures 160 - 163)** `[Branch: deployment]`
