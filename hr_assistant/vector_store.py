@@ -30,7 +30,7 @@ _ID_NAMESPACE: uuid.UUID = uuid.UUID("5b9c1a1e-8b1a-4f7d-9d5e-2b6a7c9d1e3f")
 _SPARSE_MODEL: str = "Qdrant/bm25"
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=1) # Cache the QdrantClient instance for connection reuse across the process
 def _qdrant_client() -> QdrantClient:
     """Initialize and cache a singleton QdrantClient instance for connection reuse.
 
@@ -62,7 +62,7 @@ def collection_exists(collection_name: str) -> bool:
         return False
 
 
-def _stable_chunk_id(chunk: Document) -> str:
+def _stable_chunk_id(chunk: Document) -> str: # Deterministic UUID5 generation for chunk point IDs
     """Generate a deterministic UUID5 point ID from chunk source and content text.
 
     Ensures idempotent upsert behavior: re-running ingestion updates existing
