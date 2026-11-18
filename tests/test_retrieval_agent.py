@@ -7,7 +7,7 @@ from langchain_core.language_models.fake_chat_models import FakeMessagesListChat
 from langchain_core.messages import AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 
-from hr_assistant.reranker import rerank, re_rank
+from hr_assistant.reranker import rerank
 from hr_assistant.tools import create_search_tool
 from hr_assistant.agent import create_hr_agent
 
@@ -33,9 +33,6 @@ class TestRetrievalPipeline(unittest.TestCase):
         # Query specifically about leave
         ranked = rerank("How many annual leave days do I get?", candidates, top_n=2)
         self.assertEqual(len(ranked), 2)
-        # Compatibility alias check
-        ranked_alias = re_rank("How many annual leave days do I get?", candidates, top_n=2)
-        self.assertEqual(len(ranked_alias), 2)
 
     def test_create_search_tool_structure(self):
         """Verify that create_search_tool creates a valid LangChain tool."""

@@ -118,7 +118,3 @@ def rerank(
     # Local fallback re-ranking
     logger.info("Executing local semantic re-scoring for %d candidates...", len(candidates))
     return _local_semantic_rerank(query=query, candidates=candidates, top_n=top_n)
-
-
-# Alias function matching the lecture transcript naming
-re_rank = rerank
