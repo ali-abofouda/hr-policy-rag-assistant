@@ -85,13 +85,15 @@ LANGSMITH_PROJECT: str = os.getenv("LANGSMITH_PROJECT", "hr-policy-assistant")
 
 
 def check_api_keys() -> None:
-    """Validate that all mandatory API keys and endpoints are configured.
+    """Validate that mandatory database endpoints and credentials are configured.
     
+    QDRANT_URL and QDRANT_API_KEY are mandatory for vector storage.
+    JINA_API_KEY is optional: if omitted, the pipeline defaults to local FastEmbed ONNX embeddings.
+
     Raises:
-        ValueError: If any required setting is missing from environment.
+        ValueError: If mandatory vector store settings are missing from environment.
     """
     required_configs: List[Tuple[str, str]] = [
-        ("JINA_API_KEY", JINA_API_KEY),
         ("QDRANT_URL", QDRANT_URL),
         ("QDRANT_API_KEY", QDRANT_API_KEY),
     ]
