@@ -57,7 +57,8 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   ├── 04-configuration-guide.md
 │   ├── 05-document-processing.md
 │   ├── 06-chunking-and-vector-store.md
-│   └── 07-ingestion-pipeline.md
+│   ├── 07-ingestion-pipeline.md
+│   └── 08-retrieval-and-agent-pipeline.md
 ├── commands/
 │   └── commands-basic-rag.md # Local-first execution and testing commands
 ├── hr_assistant/           # Core production package
@@ -68,16 +69,21 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   ├── document_loader.py  # Local and cloud document loaders (LangChain Documents)
 │   ├── processor.py        # Multi-format binary parser (.pdf, .docx, .pptx, .txt)
 │   ├── splitter.py         # Recursive character text chunking (500/60 overlap)
-│   ├── embeddings.py       # Jina AI embeddings with local MiniLM fallback
+│   ├── embeddings.py       # Jina AI embeddings with local FastEmbed ONNX fallback
 │   ├── vector_store.py     # Qdrant hybrid vector store, stable IDs, payload index
-│   └── ingestion.py        # SOLID ingestion orchestrator (Dual pipelines: Clean & Noisy)
+│   ├── ingestion.py        # SOLID ingestion orchestrator (Dual pipelines: Clean & Noisy)
+│   ├── llm.py              # LLM factory (Google AI Studio & Vertex AI Gemini)
+│   ├── reranker.py         # Cross-Encoder re-ranker (Jina API & local semantic fallback)
+│   ├── tools.py            # Retriever-as-a-tool pattern ('search_hr_policy')
+│   └── agent.py            # LangGraph conversational agent with MemorySaver memory
 ├── data/
 │   ├── policies/           # 10 official HR policy documents (.txt)
 │   ├── noise/              # 8 synthetic enterprise distractor files (.pdf, .docx, .pptx, .txt)
 │   └── processed/          # Pre-parsed JSON records (hr-policies/ and other-data/)
 ├── tests/                  # Automated unit and integration test suites
 │   ├── test_splitter_and_vectorstore.py
-│   └── test_ingestion.py
+│   ├── test_ingestion.py
+│   └── test_retrieval_agent.py
 └── hrrenv/                 # Isolated Python 3.12 virtual environment
 ```
 
