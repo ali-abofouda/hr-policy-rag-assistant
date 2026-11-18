@@ -49,6 +49,15 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 ├── requirements.txt        # Pinned project dependencies
 ├── .env.example            # Environment template
 ├── ingest.py               # Ingestion pipeline CLI entry point (--force, --hr-only, --noisy-only)
+├── docs/                   # Full architectural specifications and lecture guides
+│   ├── README.md           # Roadmap and lecture-by-lecture index
+│   ├── 01-hr-policy-assistant-architecture-and-overview.md
+│   ├── 02-project-architecture-and-three-phase-evolution.md
+│   ├── 03-phase-1-local-hybrid-rag-foundations.md
+│   ├── 04-project-settings-and-configuration-management.md
+│   ├── 05-document-loading-and-multi-format-processing.md
+│   ├── 06-document-chunking-and-vector-store-ingestion.md
+│   └── 07-data-ingestion-pipeline-orchestration.md
 ├── commands/
 │   └── commands-basic-rag.md # Local-first execution and testing commands
 ├── hr_assistant/           # Core production package
