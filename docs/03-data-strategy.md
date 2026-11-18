@@ -1,5 +1,5 @@
-# القسم 30 / المحاضرة 144: الطور الأول - تأسيس الاسترجاع الهجين المحلي وهندسة البيانات المشوشة
-# (Section 30 / Lecture 144: Phase 1 - Local Hybrid RAG Foundations & Noisy Data Engineering)
+# استراتيجية البيانات وتأسيس الاسترجاع الهجين ومكافحة الضوضاء
+# (Data Strategy: Local Hybrid RAG Foundations & Noisy Data Engineering)
 
 ---
 
@@ -150,4 +150,4 @@ gcloud auth application-default set-quota-project rag-hr-assistant-demo
 
 ---
 
-بهذا تكون معمارية المرحلة الأولى واضحة هندسياً؛ وسننتقل في **المحاضرة 145: Configure Project Settings** لتفصيل ملف الإعدادات `config.py` وإدارة المتغيرات البيئية بدقة.
+بهذا تكون استراتيجية البيانات وتصميم مسار الضوضاء واضحة هندسياً؛ وتتناول الوثيقة التالية (`04-configuration-guide.md`) تفصيل ملف الإعدادات وإدارة المتغيرات البيئية بدقة.

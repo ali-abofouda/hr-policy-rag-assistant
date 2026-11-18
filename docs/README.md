@@ -1,30 +1,62 @@
-# وثائق مشروع مساعد سياسات الموارد البشرية (HR Policy RAG Assistant Documentation)
+# التوثيق الهندسي والمعماري لمشروع مساعد سياسات الموارد البشرية
+# (HR Policy RAG Assistant with Enterprise AI Security — Architecture Manual)
 
-مرحباً بك في التوثيق الهندسي والمعماري لمشروع **مساعد سياسات الموارد البشرية المؤمن للشركات** (`HR Policy RAG Assistant with Enterprise AI Security`).
+مرحباً بك في الدليل المعماري والمواصفات الهندسية الشاملة لنظام **مساعد سياسات الموارد البشرية المؤمن للشركات** (`HR Policy RAG Assistant with Enterprise AI Security`). تم تصميم هذا النظام كمرجع إنتاجي متكامل (`Production Reference Implementation`) يجمع بين الاسترجاع الهجين عالي الدقة، ودروع الحماية السيبرانية للذكاء الاصطناعي، والحاويات السحابية الموزعة.
 
 ---
 
-## خريطة الوثائق والمحاضرات (Architecture & Implementation Map)
+## 1. الفهرس المعماري لوثائق النظام (System Architecture Map)
 
-| رقم المحاضرة | عنوان المحاضرة والوثيقة | الملف التوثيقي (`docs/`) | المرحلة (Phase) |
+تنقسم وثائق المشروع الهندسية إلى موديولات متسلسلة تعكس دورة حياة النظام:
+
+| الموديول | موضوع الوثيقة الهندسية | الرابط المرجعي (`docs/`) | الحالة |
 | :---: | :--- | :--- | :---: |
-| **142** | الترحيب بمشروع مساعد الـ HR واستعراض النظام الحي | [`01-hr-policy-assistant-architecture-and-overview.md`](./01-hr-policy-assistant-architecture-and-overview.md) | Kickoff & Overview (مكتمل) |
-| **143** | مقدمة لمعمارية المشروع ومراحل التطور الثلاث | [`02-project-architecture-and-three-phase-evolution.md`](./02-project-architecture-and-three-phase-evolution.md) | Architecture & Roadmap (مكتمل) |
-| **144** | الطور الأول: تأسيس الاسترجاع الهجين المحلي وهندسة البيانات المشوشة | [`03-phase-1-local-hybrid-rag-foundations.md`](./03-phase-1-local-hybrid-rag-foundations.md) | Phase 1: Foundations & Setup (مكتمل) |
-| **145** | إدارة الإعدادات المركزية وتكوين البيئة والمفاتيح | [`04-project-settings-and-configuration-management.md`](./04-project-settings-and-configuration-management.md) | Phase 1: Configuration Management (مكتمل) |
-| **146** | تحميل الوثائق وهندسة معالجة الصيغ المتعددة وموجهات النظام | [`05-document-loading-and-multi-format-processing.md`](./05-document-loading-and-multi-format-processing.md) | Phase 1: Document Loading & Multi-format (مكتمل) |
-| **147** | تقطيع المستندات وتوليد التضمينات والتخزين المتجهي الهجين | [`06-document-chunking-and-vector-store-ingestion.md`](./06-document-chunking-and-vector-store-ingestion.md) | Phase 1: Ingestion & Hybrid Vector Store (مكتمل) |
-| **148** | أتمتة وتنسيق خط إدخال البيانات والتحكم عبر الـ CLI | [`07-data-ingestion-pipeline-orchestration.md`](./07-data-ingestion-pipeline-orchestration.md) | Phase 1: Ingestion Pipeline Orchestration (مكتمل) |
-| **149 - 151** | بناء محرك الاسترجاع وإعادة الترتيب وسلسلة التوليد | قيد المعالجة | Phase 1: Retrieval & Generation Pipeline |
-| **152 - 159** | الطور الثاني: أمان النماذج اللغوية واختبارات الاختراق | قيد المعالجة | Phase 2: LLM Security & Evals |
-| **160 - 163** | الطور الثالث: الحاويات والنشر السحابي الكامل | قيد المعالجة | Phase 3: Deployment |
+| **01** | نظرة عامة على النظام والمعايير المؤسسية للإنتاج | [`01-system-overview.md`](./01-system-overview.md) | مكتمل |
+| **02** | المعمارية الهندسية ثلاثية الأطوار والطبقات | [`02-system-architecture.md`](./02-system-architecture.md) | مكتمل |
+| **03** | استراتيجية البيانات وتصميم مسار الضوضاء | [`03-data-strategy.md`](./03-data-strategy.md) | مكتمل |
+| **04** | إدارة الإعدادات المركزية والبيئة الآمنة | [`04-configuration-guide.md`](./04-configuration-guide.md) | مكتمل |
+| **05** | محرك معالجة الوثائق والصيغ المتعددة ونمط الـ JSON | [`05-document-processing.md`](./05-document-processing.md) | مكتمل |
+| **06** | التقطيع الدلالي والتخزين المتجهي الهجين في Qdrant | [`06-chunking-and-vector-store.md`](./06-chunking-and-vector-store.md) | مكتمل |
+| **07** | أتمتة خط الإدخال بمعايير SOLID وتشغيل الـ CLI | [`07-ingestion-pipeline.md`](./07-ingestion-pipeline.md) | مكتمل |
+| **08** | محرك الاسترجاع وإعادة الترتيب (`Re-ranking Engine`) | قريباً | قيد التطوير |
+| **09** | وكيل المساعد وسلسلة التوليد وتوثيق المصادر (`RAG Agent`) | قريباً | قيد التطوير |
+| **10** | بوابة النماذج الذاتية ودروع الحماية (`AI Security & Guardrails`) | قريباً | الطور الثاني |
+| **11** | اختبارات الاختراق والفريق الأحمر (`Red Teaming`) | قريباً | الطور الثاني |
+| **12** | النشر السحابي الكامل عبر Docker و Cloud Run | قريباً | الطور الثالث |
 
 ---
 
-## الأهداف المعمارية والعملية للمشروع
-1. **التعامل مع قواعد البيانات المشوشة (`Noisy Enterprise Databases`)** عبر تقنيات الـ `Re-ranking` لضمان دقة الاسترجاع حتى في بيئات البيانات غير المنتظمة.
-2. **بناء بوابة ذكاء اصطناعي ذاتية الاستضافة (`Self-Hosted LiteLLM Gateway`)** لتوحيد الاستدعاء وإدارة التبديل التلقائي بين النماذج وحساب التكاليف.
-3. **تطبيق دروع الحماية المتقدمة (`Google Model Armor & Guardrails`)** لمنع الـ Prompt Injection وتحديد نطاق التخصص.
-4. **توفير كاش دلالي ذكي (`Semantic Caching`)** لتخفيض زمن الاستجابة إلى الصفر وتوفير تكاليف استدعاء النماذج.
-5. **إجراء اختبارات الفريق الأحمر (`Red Teaming`)** للتحقق البرمجي من مناعة النظام ضد هجمات كسر الشخصية وتجاوز التعليمات.
-6. **النشر السحابي الإنتاجي (`Cloud-Native Deployment`)** باستخدام Docker و Google Cloud Run وحماية الدخول عبر Google OAuth.
+## 2. الركائز المعمارية للنظام (Architectural Pillars)
+
+```mermaid
+flowchart TD
+    subgraph DataIngestion ["1. خط استيعاب البيانات (Data Ingestion)"]
+        D1["وثائق الموارد البشرية (TXT)\n+ ملفات الضوضاء (PDF, DOCX, PPTX)"] --> D2["محرك التحويل لمرة واحدة إلى JSON"]
+        D2 --> D3["تقطيع النصوص بمعرّفات حتمية ثابتة (UUID5)"]
+        D3 --> D4["فهرسة هجينة في Qdrant Cloud (Dense + BM25)"]
+    end
+
+    subgraph HybridRetrieval ["2. خط الاسترجاع وإعادة الترتيب (Hybrid Retrieval)"]
+        D4 <--> R1["استرجاع هجين أولي (Hybrid Fusion)"]
+        R1 --> R2["إعادة الترتيب الدقيقة (Cross-Encoder Re-ranker)"]
+        R2 --> R3["تصفية الضوضاء واختيار المقاطع الأكثر دقة"]
+    end
+
+    subgraph SecurityAndGen ["3. الأمان والتوليد المؤسسي (Security & Generation)"]
+        R3 --> S1["فحص دروع الحماية وحصار النطاق (Guardrails)"]
+        S1 --> S2["توليد الرد النهائي عبر Gemini مع الاستشهاد بالمصادر"]
+    end
+```
+
+---
+
+## 3. الأهداف الهندسية والعملية للمشروع
+
+1. **التعامل مع بيئات البيانات المشوشة (`Noisy Enterprise Databases`):**
+   * عزل وثائق الـ HR عن الضوضاء المؤسسية غير ذات الصلة (تقارير المبيعات، عروض العمليات، استراتيجيات التسويق) بالاعتماد على نماذج `Cross-Encoder`.
+2. **معمارية محلية مجانية بالكامل (`Local-First Zero-Cost Architecture`):**
+   * إمكانية تشغيل النظام واختباره وتطويره بالكامل دون تكاليف بنكية أو حاجة لفوترة سحابية إلزامية عبر Google Cloud Storage، مع الحفاظ على التوافق الكامل مع التوزيعات السحابية.
+3. **تطبيق دروع الحماية ومكافحة الهلوسة (`Zero-Hallucination & AI Security`):**
+   * إجبار النموذج على الاستشهاد الصريح باسم الوثيقة المصدرية ورقم المادة، ورفض الإجابة عند عدم العثور على المعلومة، وصد هجمات حقن التعليمات (`Prompt Injection`).
+4. **التخزين الهجين الحتمي (`Deterministic Upsert & Hybrid Search`):**
+   * منع تكرار البيانات داخل قاعدة المتجهات عبر المعرفات الحتمية `UUID5`، والجمع بين الفهم الدلالي (`Jina Embeddings`) والتطابق الحرفي للمصطلحات الإدارية (`BM25`).

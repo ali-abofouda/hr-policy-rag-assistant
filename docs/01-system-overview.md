@@ -1,5 +1,5 @@
-# القسم 30 / المحاضرة 142: الدليل المعماري والمقدمة - مساعد سياسات الموارد البشرية المؤمن للشركات الكبرى
-# (Section 30 / Lecture 142: HR Policy RAG Assistant with Enterprise AI Security - System Architecture & Kickoff)
+# دليل النظام ونظرة عامة على المشروع: مساعد سياسات الموارد البشرية المؤمن للشركات الكبرى
+# (HR Policy RAG Assistant with Enterprise AI Security - System Overview & Specification)
 
 ---
 
@@ -123,12 +123,12 @@ timeline
         المحاضرات 142 - 148 : إعداد البيئة وتحميل الوثائق وبناء قاعدة Qdrant بالضوضاء
         المحاضرات 149 - 151 : بناء الـ HR Agent باستخدام LangGraph و LangGraph Studio
     section Phase 2 : LLM Security & Evals
-        المحاضرات 152 - 156 : إعداد LiteLLM Gateway و Guardrails والكاش الدلالي
-        المحاضرات 157 - 159 : اختبارات Red Teaming والتقييم العددي لدفاعات النموذج
+        Security Layer : إعداد LiteLLM Gateway و Guardrails والكاش الدلالي
+        Adversarial Testing : اختبارات Red Teaming والتقييم العددي لدفاعات النموذج
     section Phase 3 : Production Deployment
-        المحاضرات 160 - 163 : بناء Dockerfile والنشر النهائي على Google Cloud Run والـ Cleanup
+        Cloud Native : بناء Dockerfile والنشر النهائي على Google Cloud Run والـ Cleanup
 ```
 
 ---
 
-هذا التوثيق يمثل المخطط العام للمشروع بالكامل، وسننتقل في الخطوة القادمة مباشرة إلى **المحاضرة 143** لدراسة تفاصيل المعمارية الهندسية ومكونات ملفات المشروع بالتفصيل.
+هذا التوثيق يمثل المخطط العام للمشروع بالكامل، ويوضح المعمارية الهندسية ومكونات النظام التفصيلية التي تغطيها الوثائق اللاحقة في هذا المجلد.

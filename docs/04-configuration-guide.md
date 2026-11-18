@@ -1,5 +1,5 @@
-# القسم 30 / المحاضرة 145: إدارة الإعدادات المركزية وتكوين البيئة
-# (Section 30 / Lecture 145: Centralized Configuration Management & Environment Schema)
+# إدارة الإعدادات المركزية وتكوين البيئة
+# (Centralized Configuration Management & Environment Schema)
 
 ---
 
@@ -122,4 +122,4 @@ def check_api_keys() -> None:
 
 ---
 
-بهذا يكتمل التأسيس النظري لملف الإعدادات، والخطوة التالية في **المحاضرة 146: Document Loading** هي بناء خط قراءة وتحميل الوثائق الرسمية والضوضاء.
+بهذا يكتمل التأسيس الهندسي لملف الإعدادات، وتتناول الوثيقة التالية (`05-document-processing.md`) بناء خط قراءة وتحميل الوثائق الرسمية ومعالجة الصيغ المتعددة.
