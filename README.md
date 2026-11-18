@@ -48,6 +48,7 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 ├── README.md               # Architecture specification and manual
 ├── requirements.txt        # Pinned project dependencies
 ├── .env.example            # Environment template
+├── ingest.py               # Ingestion pipeline CLI entry point (--force, --hr-only, --noisy-only)
 ├── commands/
 │   └── commands-basic-rag.md # Local-first execution and testing commands
 ├── hr_assistant/           # Core production package
@@ -59,13 +60,15 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   ├── processor.py        # Multi-format binary parser (.pdf, .docx, .pptx, .txt)
 │   ├── splitter.py         # Recursive character text chunking (500/60 overlap)
 │   ├── embeddings.py       # Jina AI embeddings with local MiniLM fallback
-│   └── vector_store.py     # Qdrant hybrid vector store, stable IDs, payload index
+│   ├── vector_store.py     # Qdrant hybrid vector store, stable IDs, payload index
+│   └── ingestion.py        # SOLID ingestion orchestrator (Dual pipelines: Clean & Noisy)
 ├── data/
 │   ├── policies/           # 10 official HR policy documents (.txt)
 │   ├── noise/              # 8 synthetic enterprise distractor files (.pdf, .docx, .pptx, .txt)
 │   └── processed/          # Pre-parsed JSON records (hr-policies/ and other-data/)
 ├── tests/                  # Automated unit and integration test suites
-│   └── test_splitter_and_vectorstore.py
+│   ├── test_splitter_and_vectorstore.py
+│   └── test_ingestion.py
 └── hrrenv/                 # Isolated Python 3.12 virtual environment
 ```
 
