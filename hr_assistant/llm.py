@@ -57,7 +57,7 @@ def get_llm(
     )
     return ChatGoogleGenerativeAI(
         model=selected_model,
-        vertexai=True,
+        vertexai=True, 
         project=config.PROJECT_ID,
         location=config.LOCATION,
         temperature=temperature,

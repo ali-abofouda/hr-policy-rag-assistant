@@ -25,6 +25,7 @@ LOCATION: str = os.getenv("LOCATION", "us-central1")
 ## ---------------------------------------------------------------------------
 ## 2. API Keys & Database Endpoints
 ## ---------------------------------------------------------------------------
+GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 JINA_API_KEY: str = os.getenv("JINA_API_KEY", "")
 QDRANT_URL: str = os.getenv("QDRANT_URL", "")
 QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
@@ -55,7 +56,7 @@ QDRANT_NOISY_COLLECTION_NAME: str = os.getenv("QDRANT_NOISY_COLLECTION_NAME", "h
 ## 5. Model Identifiers
 ## ---------------------------------------------------------------------------
 # Primary inference model
-LLM_MODEL_NAME: str = os.getenv("LLM_MODEL_NAME", "gemini-2.5-flash")
+LLM_MODEL_NAME: str = os.getenv("LLM_MODEL_NAME", "gemini-3.5-flash-lite")
 
 # Embedding model: 768 dimensions
 EMBEDDING_MODEL_NAME: str = os.getenv("EMBEDDING_MODEL_NAME", "jina-embeddings-v2-base-en")
