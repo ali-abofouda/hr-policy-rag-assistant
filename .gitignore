@@ -29,4 +29,6 @@ logs/
 htmlcov/
 .pytest_cache/
 .langgraph_api/
+.chainlit/
+.files/
 
