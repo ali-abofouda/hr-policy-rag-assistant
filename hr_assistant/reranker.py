@@ -12,7 +12,7 @@ Supported Engines:
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import numpy as np
 import requests
 
@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 JINA_RERANK_URL = "https://api.jina.ai/v1/rerank"
 
 
-def _local_semantic_rerank(
+def _local_semantic_rerank_with_scores(
     query: str,
     candidates: List[Document],
     top_n: int,
-) -> List[Document]:
+) -> List[Tuple[Document, float]]:
     """Score and re-rank candidates locally using cosine similarity with embeddings.
 
     Args:
@@ -39,7 +39,7 @@ def _local_semantic_rerank(
         top_n: Number of top documents to return.
 
     Returns:
-        Sorted list of top_n Document objects.
+        Sorted list of (Document, relevance_score) tuples.
     """
     try:
         embeddings_model = get_embeddings_model()
@@ -50,39 +50,35 @@ def _local_semantic_rerank(
         # Compute cosine similarities: dot(q, d) / (||q|| * ||d||)
         norm_q = np.linalg.norm(query_vec)
         norm_docs = np.linalg.norm(doc_vecs, axis=1)
-        # Avoid division by zero
         scores = np.dot(doc_vecs, query_vec) / (norm_docs * norm_q + 1e-9)
 
         ranked_indices = np.argsort(scores)[::-1]
         top_indices = ranked_indices[:top_n]
-        return [candidates[i] for i in top_indices]
+        return [(candidates[i], float(scores[i])) for i in top_indices]
     except Exception as exc:
         logger.warning("Local semantic re-scoring fallback encountered notice: %s. Truncating candidates.", exc)
-        return candidates[:top_n]
+        return [(c, 0.5) for c in candidates[:top_n]]
 
 
-def rerank(
+def rerank_with_scores(
     query: str,
     candidates: List[Document],
     top_n: int = config.TOP_K_RESULTS,
-) -> List[Document]:
-    """Re-rank candidate documents against the user query, best first.
+) -> List[Tuple[Document, float]]:
+    """Re-rank candidates returning (Document, relevance_score) pairs.
 
-    Attempts Jina Cross-Encoder API if JINA_API_KEY is configured. If unavailable
-    or in case of network/quota exhaustion, falls back to local semantic re-scoring.
+    The guarded search tool uses these scores to gate on relevance floor,
+    preventing weakly related or off-topic context from being passed to the model.
 
     Args:
-        query: The user's question or search query.
-        candidates: Shortlist of candidate documents from hybrid retrieval.
-        top_n: Number of highest-relevance documents to return.
+        query: User question or search query.
+        candidates: Candidate Document objects from retrieval.
+        top_n: Maximum number of ranked results.
 
     Returns:
-        Re-ranked list of Document objects, trimmed to top_n.
+        List of (Document, score) tuples, highest score first.
     """
-    if not candidates:
-        return []
-
-    if top_n <= 0:
+    if not candidates or top_n <= 0:
         return []
 
     # Attempt Jina AI Cross-Encoder API if an API key is set
@@ -107,8 +103,8 @@ def rerank(
             response.raise_for_status()
 
             # Map result indices back to candidate Document objects
-            ranked = response.json()["results"]
-            return [candidates[r["index"]] for r in ranked]
+            ranked = response.json().get("results", [])
+            return [(candidates[r["index"]], float(r["relevance_score"])) for r in ranked]
         except Exception as exc:
             logger.warning(
                 "Jina Cross-Encoder API unavailable (%s). Falling back to local semantic re-scoring.",
@@ -117,4 +113,22 @@ def rerank(
 
     # Local fallback re-ranking
     logger.info("Executing local semantic re-scoring for %d candidates...", len(candidates))
-    return _local_semantic_rerank(query=query, candidates=candidates, top_n=top_n)
+    return _local_semantic_rerank_with_scores(query=query, candidates=candidates, top_n=top_n)
+
+
+def rerank(
+    query: str,
+    candidates: List[Document],
+    top_n: int = config.TOP_K_RESULTS,
+) -> List[Document]:
+    """Re-rank candidate documents against user query, returning Document list only.
+
+    Args:
+        query: User question or search query.
+        candidates: Candidate Document objects from retrieval.
+        top_n: Number of highest-relevance documents to return.
+
+    Returns:
+        Re-ranked list of Document objects, trimmed to top_n.
+    """
+    return [doc for doc, _score in rerank_with_scores(query, candidates, top_n=top_n)]
