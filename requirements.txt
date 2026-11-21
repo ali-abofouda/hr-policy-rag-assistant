@@ -31,3 +31,11 @@ streamlit
 # Local Visual Debugger & Telemetry
 langgraph-cli[inmem]
 langsmith
+
+
+# gateaway liberaries
+litellm
+langchain-litellm
+langchain-openai
+numpy
+pydantic
