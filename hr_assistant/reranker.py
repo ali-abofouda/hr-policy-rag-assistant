@@ -25,13 +25,41 @@ logger = logging.getLogger(__name__)
 
 JINA_RERANK_URL = "https://api.jina.ai/v1/rerank"
 
+# In-memory document embedding cache to prevent redundant ONNX embeddings on CPU
+_DOC_EMBEDDINGS_CACHE: dict = {}
+
+
+def _get_candidate_vectors(candidates: List[Document], embeddings_model) -> np.ndarray:
+    """Retrieve document vectors from in-memory cache, batch-embedding only unseen chunks."""
+    needed = []
+    needed_idx = []
+    vecs = [None] * len(candidates)
+
+    for i, c in enumerate(candidates):
+        text = c.page_content
+        if text in _DOC_EMBEDDINGS_CACHE:
+            vecs[i] = _DOC_EMBEDDINGS_CACHE[text]
+        else:
+            needed.append(text)
+            needed_idx.append(i)
+
+    if needed:
+        logger.debug("Embedding %d new candidate chunk(s) for local re-ranking cache...", len(needed))
+        new_vecs = embeddings_model.embed_documents(needed)
+        for idx, text, v in zip(needed_idx, needed, new_vecs):
+            arr = np.array(v, dtype=float)
+            _DOC_EMBEDDINGS_CACHE[text] = arr
+            vecs[idx] = arr
+
+    return np.array(vecs, dtype=float)
+
 
 def _local_semantic_rerank_with_scores(
     query: str,
     candidates: List[Document],
     top_n: int,
 ) -> List[Tuple[Document, float]]:
-    """Score and re-rank candidates locally using cosine similarity with embeddings.
+    """Score and re-rank candidates locally using cosine similarity with cached embeddings.
 
     Args:
         query: User input query string.
@@ -44,8 +72,7 @@ def _local_semantic_rerank_with_scores(
     try:
         embeddings_model = get_embeddings_model()
         query_vec = np.array(embeddings_model.embed_query(query))
-        doc_texts = [c.page_content for c in candidates]
-        doc_vecs = np.array(embeddings_model.embed_documents(doc_texts))
+        doc_vecs = _get_candidate_vectors(candidates, embeddings_model)
 
         # Compute cosine similarities: dot(q, d) / (||q|| * ||d||)
         norm_q = np.linalg.norm(query_vec)

@@ -97,6 +97,7 @@ RELEVANCE_THRESHOLD: float = float(os.getenv("RELEVANCE_THRESHOLD", "0.35"))
 ## 9. Reliability — Input & Output Safety Guardrails
 ## ---------------------------------------------------------------------------
 GUARDRAIL_PROVIDER: str = os.getenv("GUARDRAIL_PROVIDER", "local")
+GUARDRAIL_OUTPUT_PROVIDER: str = os.getenv("GUARDRAIL_OUTPUT_PROVIDER", "local")
 GUARDRAIL_FAIL_OPEN_INPUT: bool = os.getenv("GUARDRAIL_FAIL_OPEN_INPUT", "false").strip().lower() == "true"
 GUARDRAIL_FAIL_OPEN_OUTPUT: bool = os.getenv("GUARDRAIL_FAIL_OPEN_OUTPUT", "true").strip().lower() == "true"
 GUARDRAIL_HISTORY_TURNS: int = int(os.getenv("GUARDRAIL_HISTORY_TURNS", "6"))
@@ -104,7 +105,7 @@ GUARDRAIL_HISTORY_TURNS: int = int(os.getenv("GUARDRAIL_HISTORY_TURNS", "6"))
 ## ---------------------------------------------------------------------------
 ## 10. Reliability — Semantic Cache
 ## ---------------------------------------------------------------------------
-SEMANTIC_CACHE_THRESHOLD: float = float(os.getenv("SEMANTIC_CACHE_THRESHOLD", "0.93"))
+SEMANTIC_CACHE_THRESHOLD: float = float(os.getenv("SEMANTIC_CACHE_THRESHOLD", "0.80"))
 SEMANTIC_CACHE_MAX_ENTRIES: int = int(os.getenv("SEMANTIC_CACHE_MAX_ENTRIES", "500"))
 SEMANTIC_CACHE_TTL_SECONDS: int = int(os.getenv("SEMANTIC_CACHE_TTL_SECONDS", "3600"))
 

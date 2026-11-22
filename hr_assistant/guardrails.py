@@ -57,9 +57,18 @@ _ADVERSARIAL_PATTERNS = [
 
 _COMPILED_PATTERNS = [re.compile(p) for p in _ADVERSARIAL_PATTERNS]
 
+# Heuristic patterns for fast local output screening (PII, credentials, connection leaks)
+_OUTPUT_LEAK_PATTERNS = [
+    r"\b(gsk_[a-zA-Z0-9]{20,}|AQ\.[a-zA-Z0-9_\-]{20,}|sk-[a-zA-Z0-9]{20,})\b",
+    r"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})\b",
+    r"\b\d{3}-\d{2}-\d{4}\b",
+    r"\bhttps?://[a-z0-9\-]+\.cloud\.qdrant\.io\b",
+]
+_COMPILED_OUTPUT_PATTERNS = [re.compile(p) for p in _OUTPUT_LEAK_PATTERNS]
+
 
 def _check_with_local_heuristics(text: str, direction: str) -> Tuple[bool, str]:
-    """Screen text using local regex heuristics for common injection patterns."""
+    """Screen text using local regex heuristics for common injection patterns and sensitive leaks."""
     if direction == "input":
         for pattern in _COMPILED_PATTERNS:
             match = pattern.search(text)
@@ -67,6 +76,12 @@ def _check_with_local_heuristics(text: str, direction: str) -> Tuple[bool, str]:
                 matched_str = match.group(0)
                 logger.warning("Local input guardrail flagged injection pattern: '%s'", matched_str)
                 return False, f"Flagged adversarial pattern detected: '{matched_str}'"
+    elif direction == "output":
+        for pattern in _COMPILED_OUTPUT_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                logger.warning("Local output guardrail flagged sensitive leak pattern.")
+                return False, "Flagged potential sensitive data / credential leak in generated output."
     return True, "Passed local heuristic screening."
 
 
@@ -151,7 +166,11 @@ def _on_provider_error(direction: str, exc: Exception) -> Tuple[bool, str]:
 
 def _check(text: str, direction: str) -> Tuple[bool, str]:
     """Route evaluation through configured guardrail provider."""
-    provider = config.GUARDRAIL_PROVIDER.strip().lower()
+    provider = (
+        config.GUARDRAIL_OUTPUT_PROVIDER.strip().lower()
+        if direction == "output"
+        else config.GUARDRAIL_PROVIDER.strip().lower()
+    )
 
     if provider in ("none", "off", "disabled"):
         return True, "Guardrail disabled by configuration."
