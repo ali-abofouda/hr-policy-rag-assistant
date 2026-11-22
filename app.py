@@ -25,7 +25,6 @@ check_langsmith_tracing()
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="HR Policy Assistant",
-    page_icon="💼",
     layout="centered",
     initial_sidebar_state="expanded",
 )
@@ -45,18 +44,20 @@ if "messages" not in st.session_state:
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("💼 HR Assistant")
+    st.header("HR Assistant")
 
-    if st.button("New conversation", icon="🔄", use_container_width=True, type="primary"):
+    if st.button("New conversation", use_container_width=True, type="primary"):
         st.session_state.thread_id = str(uuid.uuid4())
         st.session_state.messages = []
         st.rerun()
 
-    if st.button("Clear Cache", icon="🧹", use_container_width=True):
+    if st.button("Clear Cache", use_container_width=True):
         cache.clear()
         st.success("Semantic cache cleared!")
 
-    st.caption(f"Safety guardrail: `{config.GUARDRAIL_PROVIDER}`")
+    st.caption(f"Input Guardrail: `{config.GUARDRAIL_PROVIDER}`")
+    st.caption(f"Output Guardrail: `{config.GUARDRAIL_OUTPUT_PROVIDER}`")
+    st.caption(f"Cache Threshold: `{config.SEMANTIC_CACHE_THRESHOLD}`")
     st.divider()
 
     with st.expander("System info", expanded=False):
@@ -97,14 +98,14 @@ if not st.session_state.messages:
     st.divider()
     cols = st.columns(2)
     topics = [
-        ("🏖️", "Leave & Time Off", "Annual, sick, casual leave, carry-forward, holidays"),
-        ("🏠", "Remote Work", "WFH eligibility, weekly limits, equipment"),
-        ("📋", "Probation & Exits", "Notice periods, final settlement, exit process"),
-        ("💰", "Reimbursements", "Travel, internet, certifications, eligible claims"),
+        ("Leave & Time Off", "Annual, sick, casual leave, carry-forward, holidays"),
+        ("Remote Work", "WFH eligibility, weekly limits, equipment"),
+        ("Probation & Exits", "Notice periods, final settlement, exit process"),
+        ("Reimbursements", "Travel, internet, certifications, eligible claims"),
     ]
-    for i, (icon, title, desc) in enumerate(topics):
+    for i, (title, desc) in enumerate(topics):
         with cols[i % 2]:
-            st.markdown(f"**{icon} {title}**")
+            st.markdown(f"**{title}**")
             st.caption(desc)
     st.divider()
 
