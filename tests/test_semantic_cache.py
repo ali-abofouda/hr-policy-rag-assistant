@@ -79,6 +79,54 @@ class TestSemanticCache(unittest.TestCase):
         self.assertNotIn("Question 0", questions)
         self.assertIn("Question 3", questions)
 
+    def test_cache_clear_flushes_entries(self):
+        """Verify clear() empties deque and resets cached vector."""
+        self.cache.store("Test Q", "Test A")
+        self.assertEqual(len(self.cache._entries), 1)
+
+        self.cache.clear()
+        self.assertEqual(len(self.cache._entries), 0)
+        self.assertIsNone(self.cache._last_embedded)
+        self.assertIsNone(self.cache.lookup("Test Q"))
+
+    def test_real_embedding_paraphrase_hit(self):
+        """Verify real FastEmbed model hits for semantically paraphrased question with threshold 0.80."""
+        real_cache = SemanticCache(threshold=0.80)
+        stored_q = "What is the standard policy regarding annual leave entitlement and how is it calculated?"
+        stored_a = "Every full-time employee is entitled to 18 days of paid annual leave per year."
+        real_cache.store(stored_q, stored_a)
+
+        paraphrased_q = "How many vacation days do employees receive annually?"
+        cached_hit = real_cache.lookup(paraphrased_q)
+        self.assertEqual(cached_hit, stored_a)
+
+    def test_real_embedding_cross_topic_miss(self):
+        """Verify real FastEmbed model avoids false positive hits for distinct HR policies."""
+        real_cache = SemanticCache(threshold=0.80)
+        real_cache.store(
+            "What is the standard policy regarding annual leave entitlement?",
+            "18 days of paid annual leave.",
+        )
+
+        # Distinct topic (Probation period) must miss and NOT return leave answer
+        probation_q = "What is the probation period policy?"
+        result = real_cache.lookup(probation_q)
+        self.assertIsNone(result)
+
+    def test_cache_hit_execution_speed(self):
+        """Verify semantic cache hit executes in under 100 milliseconds."""
+        fast_cache = SemanticCache(threshold=0.80)
+        q = "How many days of annual leave do I get?"
+        a = "18 days of paid annual leave."
+        fast_cache.store(q, a)
+
+        t0 = time.perf_counter()
+        res = fast_cache.lookup(q)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+
+        self.assertEqual(res, a)
+        self.assertLess(elapsed_ms, 100.0)
+
 
 class TestThreadMemory(unittest.TestCase):
     """Validate thread memory operations and aggregate screening history."""
