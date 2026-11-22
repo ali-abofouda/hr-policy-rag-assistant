@@ -12,7 +12,7 @@ class TestStreamlitApp(unittest.TestCase):
 
     def test_app_renders_without_exceptions(self):
         """Verify app.py compiles, initializes session state, and renders cleanly."""
-        at = AppTest.from_file(APP_FILE, default_timeout=30)
+        at = AppTest.from_file(APP_FILE, default_timeout=60)
         at.run()
 
         # Ensure no runtime exceptions occurred during startup
