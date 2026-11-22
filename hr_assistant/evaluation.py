@@ -108,17 +108,39 @@ def ensure_evaluation_dataset(client: Client, dataset_name: str = "hr-policy-qa"
 
 def create_evaluators(judge_llm: ChatOpenAI) -> List[Callable]:
     """Create correctness and groundedness LLM-as-a-judge evaluators using openevals."""
-    correctness_evaluator = create_llm_as_judge(
+    raw_correctness = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
         judge=judge_llm,
         feedback_key="correctness",
     )
 
-    groundedness_evaluator = create_llm_as_judge(
+    raw_groundedness = create_llm_as_judge(
         prompt=RAG_GROUNDEDNESS_PROMPT,
         judge=judge_llm,
         feedback_key="groundedness",
     )
+
+    def correctness_evaluator(run: Any, example: Any) -> Dict[str, Any]:
+        """LangSmith run evaluator for answer correctness against ground truth."""
+        inputs = example.inputs if example else (run.inputs or {})
+        ref_outputs = example.outputs if example else {}
+        outputs = run.outputs or {}
+        answer = outputs.get("answer") or outputs.get("outputs", "")
+        return raw_correctness(
+            inputs=inputs,
+            outputs=answer,
+            reference_outputs=ref_outputs,
+        )
+
+    def groundedness_evaluator(run: Any, example: Any) -> Dict[str, Any]:
+        """LangSmith run evaluator for RAG groundedness against retrieved context."""
+        outputs = run.outputs or {}
+        context = outputs.get("context", "")
+        answer = outputs.get("answer") or outputs.get("outputs", "")
+        return raw_groundedness(
+            outputs=answer,
+            context=context,
+        )
 
     return [correctness_evaluator, groundedness_evaluator]
 
@@ -175,7 +197,7 @@ def run_evaluation(
         evaluators=evaluators,
         experiment_prefix="hr-policy-quality",
         description="Groundedness and Correctness evaluation for HR Policy RAG Assistant",
-        max_concurrency=2,
+        max_concurrency=1,
     )
 
     logger.info("Evaluation experiment finished successfully.")
