@@ -9,7 +9,12 @@ import time
 import streamlit as st
 
 from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import ask, build_hr_assistant
+from hr_assistant.pipeline import (
+    INPUT_BLOCKED_MESSAGE,
+    OUTPUT_BLOCKED_MESSAGE,
+    ask,
+    build_hr_assistant,
+)
 from hr_assistant.tracing import check_langsmith_tracing
 from hr_assistant import config
 
@@ -47,6 +52,11 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
+    if st.button("Clear Cache", icon="🧹", use_container_width=True):
+        cache.clear()
+        st.success("Semantic cache cleared!")
+
+    st.caption(f"Safety guardrail: `{config.GUARDRAIL_PROVIDER}`")
     st.divider()
 
     with st.expander("System info", expanded=False):
@@ -112,14 +122,20 @@ if selected_quick:
 if user_prompt:
     with st.chat_message("user"):
         st.markdown(user_prompt)
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
 
     with st.chat_message("assistant"):
         with st.spinner("Searching policies..."):
             t0 = time.time()
             answer = ask(agent, cache, user_prompt, thread_id=st.session_state.thread_id)
             dt = time.time() - t0
-        st.markdown(answer)
+
+        if answer in (INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE):
+            st.warning(answer)
+        else:
+            st.markdown(answer)
         st.caption(f"Answered in {dt:.1f}s")
 
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    # Only append to session transcript if the prompt was not blocked at input
+    if answer != INPUT_BLOCKED_MESSAGE:
+        st.session_state.messages.append({"role": "user", "content": user_prompt})
+        st.session_state.messages.append({"role": "assistant", "content": answer})
