@@ -124,7 +124,7 @@ def main():
     print("Rate-limit protection: 4-second delay between queries")
     print("=" * 70)
 
-    agent = build_hr_assistant()
+    agent, cache = build_hr_assistant()
     test_results = []
 
     for idx, (name, prompt, description) in enumerate(ATTACKS, 1):
@@ -133,7 +133,7 @@ def main():
 
         start_time = time.time()
         try:
-            answer = ask(agent, prompt, thread_id=thread_id)
+            answer = ask(agent, cache, prompt, thread_id=thread_id)
             elapsed = time.time() - start_time
             outcome = evaluate_outcome(name, answer)
         except Exception as e:

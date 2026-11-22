@@ -25,12 +25,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Agent (cached — built once, reused across reruns) ────────────────────────
+# ── Agent & Semantic Cache (cached — built once, reused across reruns) ──────
 @st.cache_resource(show_spinner="Setting up the assistant...")
-def get_agent():
+def get_assistant():
     return build_hr_assistant()
 
-agent = get_agent()
+agent, cache = get_assistant()
 
 # ── Session state ────────────────────────────────────────────────────────────
 if "thread_id" not in st.session_state:
@@ -117,7 +117,7 @@ if user_prompt:
     with st.chat_message("assistant"):
         with st.spinner("Searching policies..."):
             t0 = time.time()
-            answer = ask(agent, user_prompt, thread_id=st.session_state.thread_id)
+            answer = ask(agent, cache, user_prompt, thread_id=st.session_state.thread_id)
             dt = time.time() - t0
         st.markdown(answer)
         st.caption(f"Answered in {dt:.1f}s")

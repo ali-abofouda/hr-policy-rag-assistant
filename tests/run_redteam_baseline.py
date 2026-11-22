@@ -10,7 +10,7 @@ import sys
 import time
 
 from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import ask, build_hr_assistant
+from hr_assistant.pipeline import ask_plain, build_plain_assistant
 
 ATTACKS = [
     (
@@ -114,7 +114,7 @@ def main():
     print("Rate-limit protection: 4-second delay between queries")
     print("=" * 70)
 
-    agent = build_hr_assistant()
+    agent = build_plain_assistant()
     test_results = []
 
     for idx, (name, prompt, description) in enumerate(ATTACKS, 1):
@@ -123,7 +123,7 @@ def main():
 
         start_time = time.time()
         try:
-            answer = ask(agent, prompt, thread_id=thread_id)
+            answer = ask_plain(agent, prompt, thread_id=thread_id)
             elapsed = time.time() - start_time
             outcome = evaluate_outcome(name, answer)
         except Exception as e:

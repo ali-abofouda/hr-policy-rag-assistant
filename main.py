@@ -10,8 +10,8 @@ def main():
     check_langsmith_tracing()
 
     print("\nConnecting to the HR policy assistant...")
-    agent = build_hr_assistant()
-    print("Assistant ready!\n")
+    agent, cache = build_hr_assistant()
+    print("Assistant and Semantic Cache ready!\n")
 
     demo_questions = [
         "How many paid annual leave days do I get?",
@@ -25,7 +25,7 @@ def main():
         print("=" * 60)
         print("QUESTION:", question)
         print("-" * 60)
-        answer = ask(agent, question)
+        answer = ask(agent, cache, question)
         print("ANSWER:\n", answer)
         print("=" * 60)
         print()

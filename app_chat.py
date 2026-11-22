@@ -20,7 +20,7 @@ from typing import List, Optional
 
 import chainlit as cl
 
-from hr_assistant import config
+from hr_assistant import config, thread_memory
 from hr_assistant.guardrails import check_input, check_output
 from hr_assistant.logging_config import configure_logging
 from hr_assistant.pipeline import (
@@ -36,8 +36,8 @@ configure_logging()
 check_langsmith_tracing()
 logger = logging.getLogger(__name__)
 
-# Build the compiled agent once at startup
-agent = build_hr_assistant()
+# Build the compiled agent and semantic cache once at startup
+agent, cache = build_hr_assistant()
 
 # Path for raw policies to display in the side drawer
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -146,9 +146,11 @@ async def handle_message(message: cl.Message):
 
     # ── Step 1: Input Safety Screening ───────────────────────────────────────
     async with cl.Step(name="Input Safety Screening", type="run") as guard_step:
-        guard_step.input = user_query
+        # Aggregate with recent user turns for multi-turn screening
+        screen_text = thread_memory.input_text_for_screening(agent, user_query, thread_id)
+        guard_step.input = screen_text
         t0 = time.time()
-        input_ok, input_reason = await cl.make_async(check_input)(user_query)
+        input_ok, input_reason = await cl.make_async(check_input)(screen_text)
         dt_guard = time.time() - t0
 
         if not input_ok:
@@ -158,7 +160,28 @@ async def handle_message(message: cl.Message):
 
         guard_step.output = f"PASSED in {dt_guard:.2f}s: {input_reason}"
 
-    # ── Step 2: Agent Execution (Scoped Retrieval + Reranking + LLM) ─────────
+    # ── Step 2: Semantic Cache Lookup ────────────────────────────────────────
+    async with cl.Step(name="Semantic Cache Lookup", type="tool") as cache_step:
+        cache_step.input = user_query
+        t0 = time.time()
+        cached_answer = await cl.make_async(cache.lookup)(user_query)
+        dt_cache = time.time() - t0
+
+        if cached_answer is not None:
+            cache_step.output = f"CACHE HIT in {dt_cache:.3f}s (Score >= {config.SEMANTIC_CACHE_THRESHOLD}) — skipping RAG + LLM"
+            thread_memory.record_turn(agent, thread_id, user_query, cached_answer)
+            side_elements = _find_source_documents(cached_answer)
+            cl.user_session.set("last_query", user_query)
+            cl.user_session.set("last_answer", cached_answer)
+            await cl.Message(
+                content=cached_answer,
+                elements=side_elements if side_elements else None,
+            ).send()
+            return
+
+        cache_step.output = f"CACHE MISS in {dt_cache:.3f}s — proceeding to Vector Search & Re-ranking"
+
+    # ── Step 3: Agent Execution (Scoped Retrieval + Reranking + LLM) ─────────
     async with cl.Step(name="Policy Retrieval & Grounded Generation", type="tool") as agent_step:
         agent_step.input = user_query
         t0 = time.time()
@@ -166,7 +189,7 @@ async def handle_message(message: cl.Message):
         dt_agent = time.time() - t0
         agent_step.output = f"Generated grounded answer with citations in {dt_agent:.2f}s"
 
-    # ── Step 3: Output Safety Screening ──────────────────────────────────────
+    # ── Step 4: Output Safety Screening ──────────────────────────────────────
     async with cl.Step(name="Output Safety Verification", type="run") as out_step:
         out_step.input = answer[:100] + "..."
         t0 = time.time()
@@ -180,7 +203,10 @@ async def handle_message(message: cl.Message):
 
         out_step.output = f"PASSED in {dt_out:.2f}s: {output_reason}"
 
-    # ── Step 4: Parse Citations and Attach Side Drawer Elements ──────────────
+    # ── Step 5: Store in Semantic Cache for Future Instant Queries ───────────
+    cache.store(user_query, answer)
+
+    # ── Step 6: Parse Citations and Attach Side Drawer Elements ──────────────
     side_elements = _find_source_documents(answer)
 
     # Store for feedback collection
