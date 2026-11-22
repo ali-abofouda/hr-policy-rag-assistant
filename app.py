@@ -55,9 +55,13 @@ with st.sidebar:
         cache.clear()
         st.success("Semantic cache cleared!")
 
-    st.caption(f"Input Guardrail: `{config.GUARDRAIL_PROVIDER}`")
-    st.caption(f"Output Guardrail: `{config.GUARDRAIL_OUTPUT_PROVIDER}`")
-    st.caption(f"Cache Threshold: `{config.SEMANTIC_CACHE_THRESHOLD}`")
+    input_guardrail = getattr(config, "GUARDRAIL_PROVIDER", "local")
+    output_guardrail = getattr(config, "GUARDRAIL_OUTPUT_PROVIDER", "local")
+    cache_threshold = getattr(config, "SEMANTIC_CACHE_THRESHOLD", 0.80)
+
+    st.caption(f"Input Guardrail: `{input_guardrail}`")
+    st.caption(f"Output Guardrail: `{output_guardrail}`")
+    st.caption(f"Cache Threshold: `{cache_threshold}`")
     st.divider()
 
     with st.expander("System info", expanded=False):
