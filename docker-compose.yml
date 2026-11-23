@@ -1,0 +1,51 @@
+# Microservice Architecture for HR Policy RAG Assistant
+# Usage:
+#   Start Web App:                 docker compose up -d app
+#   Run Ingestion Pipeline:        docker compose --profile tools run --rm ingest
+#   Run Quality Evaluation:        docker compose --profile tools run --rm eval
+#   View App Logs:                 docker compose logs -f app
+
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr-policy-assistant-app
+    ports:
+      - "8501:8080"
+    env_file:
+      - .env
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    command: >
+      streamlit run app.py
+      --server.port=8080
+      --server.address=0.0.0.0
+      --server.headless=true
+      --server.enableCORS=false
+      --server.enableXsrfProtection=false
+
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr-policy-assistant-ingest
+    env_file:
+      - .env
+    profiles:
+      - tools
+    command: python ingest.py
+
+  eval:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr-policy-assistant-eval
+    env_file:
+      - .env
+    profiles:
+      - tools
+    command: python evaluate.py

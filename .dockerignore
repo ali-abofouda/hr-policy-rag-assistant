@@ -1,0 +1,36 @@
+# Virtual environments
+hrrenv/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git and IDE
+.git/
+.gitignore
+.cursor/
+.vscode/
+.idea/
+
+# Local sensitive configuration and secrets
+.env
+.streamlit/secrets.toml
+
+# Testing, notebooks and raw evaluation results
+tests/
+notebooks/
+results/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local build artifacts and telemetry
+.langgraph_api/
+.chainlit/
+.files/
+dist/
+build/
+*.egg-info/

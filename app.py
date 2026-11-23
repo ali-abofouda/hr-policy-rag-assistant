@@ -29,6 +29,55 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
+# ── Access Control & Authentication Gating ────────────────────────────────────
+def is_auth_configured() -> bool:
+    """Return True only when Streamlit auth configuration and secrets are present."""
+    try:
+        return "auth" in st.secrets
+    except Exception:
+        return False
+
+
+def verify_access_control() -> bool:
+    """Enforce Google OAuth authentication and whitelist verification.
+    
+    In Cloud Run deployment: requires authenticated Google account on allowed list.
+    In local development: falls back to open mode to avoid crashing without secrets.toml.
+    """
+    if not is_auth_configured():
+        return True
+
+    user = getattr(st, "user", None)
+    is_logged_in = getattr(user, "is_logged_in", False) if user else False
+
+    if not is_logged_in:
+        st.subheader("Employee Authentication Required")
+        st.info("Please sign in with your corporate Google Workspace account to access company HR policies.")
+        if hasattr(st, "login"):
+            if st.button("Log in with Google", type="primary", use_container_width=True):
+                st.login("google")
+        st.stop()
+        return False
+
+    user_email = str(getattr(user, "email", "")).strip().lower()
+    allowed_emails = [e.lower() for e in config.ALLOWED_EMPLOYEE_EMAILS]
+
+    if allowed_emails and user_email not in allowed_emails:
+        st.error(f"Access Denied: Account '{user_email}' is not authorized to access this HR Assistant.")
+        st.caption("Please contact your IT/HR administrator to request system access.")
+        if hasattr(st, "logout") and st.button("Log out"):
+            st.logout()
+            st.rerun()
+        st.stop()
+        return False
+
+    return True
+
+
+# Enforce authentication gate before rendering application components
+verify_access_control()
+
 # ── Agent & Semantic Cache (cached — built once, reused across reruns) ──────
 @st.cache_resource(show_spinner="Setting up the assistant...")
 def get_assistant():
@@ -62,6 +111,17 @@ with st.sidebar:
     st.caption(f"Input Guardrail: `{input_guardrail}`")
     st.caption(f"Output Guardrail: `{output_guardrail}`")
     st.caption(f"Cache Threshold: `{cache_threshold}`")
+
+    # Access control status
+    user = getattr(st, "user", None)
+    if is_auth_configured() and user and getattr(user, "is_logged_in", False):
+        st.caption(f"Account: `{user.email}`")
+        if hasattr(st, "logout") and st.button("Log out", use_container_width=True):
+            st.logout()
+            st.rerun()
+    else:
+        st.caption("Access Control: `Open (Local)`")
+
     st.divider()
 
     with st.expander("System info", expanded=False):

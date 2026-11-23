@@ -25,8 +25,9 @@ python-pptx
 # Jina Embeddings & Re-ranker (Direct REST calls)
 requests
 
-# Web Interface
+# Web Interface & Authentication
 streamlit
+authlib
 
 # Local Visual Debugger & Telemetry
 langgraph-cli[inmem]

@@ -117,6 +117,14 @@ LANGSMITH_ENDPOINT: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.lan
 LANGSMITH_API_KEY: str = os.getenv("LANGSMITH_API_KEY", "")
 LANGSMITH_PROJECT: str = os.getenv("LANGSMITH_PROJECT", "hr-policy-assistant")
 
+## ---------------------------------------------------------------------------
+## 12. Access Control & Google OAuth Authentication
+## ---------------------------------------------------------------------------
+_raw_allowed_emails = os.getenv("ALLOWED_EMPLOYEE_EMAILS", "")
+ALLOWED_EMPLOYEE_EMAILS: List[str] = [
+    email.strip().lower() for email in _raw_allowed_emails.split(",") if email.strip()
+]
+
 
 def check_api_keys() -> None:
     """Validate that mandatory database endpoints and credentials are configured.
