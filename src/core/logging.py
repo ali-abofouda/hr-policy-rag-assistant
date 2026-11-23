@@ -5,13 +5,17 @@ import sys
 from typing import Union
 
 
-def configure_logging(level: Union[int, str] = logging.INFO) -> None:
+def configure_logging(
+    level: Union[int, str] = logging.INFO,
+    log_level: Union[int, str, None] = None,
+) -> None:
     """Configure unified logging format for console and cloud run runtime."""
-    if isinstance(level, str):
-        level = getattr(logging, level.upper(), logging.INFO)
+    effective_level = log_level if log_level is not None else level
+    if isinstance(effective_level, str):
+        effective_level = getattr(logging, effective_level.upper(), logging.INFO)
 
     logging.basicConfig(
-        level=level,
+        level=effective_level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],

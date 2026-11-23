@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager: initialize subsystems on startup and clean up on shutdown."""
-    setup_logging(log_level=settings.LOG_LEVEL)
+    setup_logging(level=settings.LOG_LEVEL)
     logger.info("Starting %s v%s in %s environment", settings.PROJECT_NAME, settings.API_VERSION, settings.ENVIRONMENT)
 
     # Validate essential configuration
