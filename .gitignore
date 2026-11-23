@@ -1,5 +1,7 @@
 # Environment and virtualenv
 .env
+deploy.env.yaml
+.streamlit/secrets.toml
 .venv
 hrrenv/
 env/
