@@ -1,62 +1,74 @@
-# التوثيق الهندسي والمعماري لمشروع مساعد سياسات الموارد البشرية
-# (HR Policy RAG Assistant with Enterprise AI Security — Architecture Manual)
+# HR Policy RAG Assistant: Engineering & Architecture Manual
 
-مرحباً بك في الدليل المعماري والمواصفات الهندسية الشاملة لنظام **مساعد سياسات الموارد البشرية المؤمن للشركات** (`HR Policy RAG Assistant with Enterprise AI Security`). تم تصميم هذا النظام كمرجع إنتاجي متكامل (`Production Reference Implementation`) يجمع بين الاسترجاع الهجين عالي الدقة، ودروع الحماية السيبرانية للذكاء الاصطناعي، والحاويات السحابية الموزعة.
+Welcome to the **Engineering Architecture Manual and Technical Documentation** for the **HR Policy RAG Assistant with Enterprise AI Security**. 
+
+This system serves as an enterprise reference implementation of a production-grade, secure, cloud-native Retrieval-Augmented Generation (RAG) assistant designed for corporate environments.
 
 ---
 
-## 1. الفهرس المعماري لوثائق النظام (System Architecture Map)
+## 1. System Architecture Map (Documentation Index)
 
-تنقسم وثائق المشروع الهندسية إلى موديولات متسلسلة تعكس دورة حياة النظام:
+The documentation is organized into 15 sequential modules reflecting the end-to-end lifecycle of the system:
 
-| الموديول | موضوع الوثيقة الهندسية | الرابط المرجعي (`docs/`) | الحالة |
+| Module | Technical Topic | Reference Guide (`docs/`) | Status |
 | :---: | :--- | :--- | :---: |
-| **01** | نظرة عامة على النظام والمعايير المؤسسية للإنتاج | [`01-system-overview.md`](./01-system-overview.md) | مكتمل |
-| **02** | المعمارية الهندسية ثلاثية الأطوار والطبقات | [`02-system-architecture.md`](./02-system-architecture.md) | مكتمل |
-| **03** | استراتيجية البيانات وتصميم مسار الضوضاء | [`03-data-strategy.md`](./03-data-strategy.md) | مكتمل |
-| **04** | إدارة الإعدادات المركزية والبيئة الآمنة | [`04-configuration-guide.md`](./04-configuration-guide.md) | مكتمل |
-| **05** | محرك معالجة الوثائق والصيغ المتعددة ونمط الـ JSON | [`05-document-processing.md`](./05-document-processing.md) | مكتمل |
-| **06** | التقطيع الدلالي والتخزين المتجهي الهجين في Qdrant | [`06-chunking-and-vector-store.md`](./06-chunking-and-vector-store.md) | مكتمل |
-| **07** | أتمتة خط الإدخال بمعايير SOLID وتشغيل الـ CLI | [`07-ingestion-pipeline.md`](./07-ingestion-pipeline.md) | مكتمل |
-| **08** | محرك الاسترجاع وإعادة الترتيب ووكيل المساعد (`RAG Agent`) | [`08-retrieval-and-agent-pipeline.md`](./08-retrieval-and-agent-pipeline.md) | مكتمل |
-| **09** | خط أنابيب الاستعلام التفاعلي وواجهة المحادثة (`Query Pipeline`) | قريباً | قيد التطوير |
-| **10** | بوابة النماذج الذاتية ودروع الحماية (`AI Security & Guardrails`) | قريباً | الطور الثاني |
-| **11** | اختبارات الاختراق والفريق الأحمر (`Red Teaming`) | قريباً | الطور الثاني |
-| **12** | النشر السحابي الكامل عبر Docker و Cloud Run | قريباً | الطور الثالث |
+| **01** | Executive Summary, Production Standards & DDD Layout | [`01-system-overview.md`](./01-system-overview.md) | Completed |
+| **02** | System Architecture & Domain-Driven Modular Layout | [`02-system-architecture.md`](./02-system-architecture.md) | Completed |
+| **03** | Enterprise Corpus Design & Distractor Noise Strategy | [`03-data-strategy.md`](./03-data-strategy.md) | Completed |
+| **04** | Configuration Guide & Pydantic v2 BaseSettings | [`04-configuration-guide.md`](./04-configuration-guide.md) | Completed |
+| **05** | Document Processing & Parse-Once-to-JSON Pattern | [`05-document-processing.md`](./05-document-processing.md) | Completed |
+| **06** | Semantic Chunking, Stable UUID5 & Qdrant Hybrid Index | [`06-chunking-and-vector-store.md`](./06-chunking-and-vector-store.md) | Completed |
+| **07** | SOLID Ingestion Orchestration & Ingestion CLI | [`07-ingestion-pipeline.md`](./07-ingestion-pipeline.md) | Completed |
+| **08** | Hybrid Retrieval Fusion, Cross-Encoder & ReAct Agent | [`08-retrieval-and-agent-pipeline.md`](./08-retrieval-and-agent-pipeline.md) | Completed |
+| **09** | LiteLLM Gateway Router & Dynamic Model Failover | [`09-llm-gateway-and-routing.md`](./09-llm-gateway-and-routing.md) | Completed |
+| **10** | AI Security & Multi-Layer Boundary Guardrails | [`10-ai-security-and-guardrails.md`](./10-ai-security-and-guardrails.md) | Completed |
+| **11** | Semantic Caching (ONNX FastEmbed) & Thread Memory | [`11-semantic-caching-and-memory.md`](./11-semantic-caching-and-memory.md) | Completed |
+| **12** | Adversarial Red Teaming & RAG Triad Evaluation | [`12-red-teaming-and-evaluation.md`](./12-red-teaming-and-evaluation.md) | Completed |
+| **13** | Streamlit Web User Interface & AppTest Integration | [`13-web-ui-and-testing.md`](./13-web-ui-and-testing.md) | Completed |
+| **14** | Production Containerization, Docker Compose & Google IAM | [`14-containerization-and-iam.md`](./14-containerization-and-iam.md) | Completed |
+| **15** | Production FastAPI REST API & Strict Pydantic DTOs | [`15-production-rest-api.md`](./15-production-rest-api.md) | Completed |
 
 ---
 
-## 2. الركائز المعمارية للنظام (Architectural Pillars)
+## 2. Architectural Pillars
 
 ```mermaid
 flowchart TD
-    subgraph DataIngestion ["1. خط استيعاب البيانات (Data Ingestion)"]
-        D1["وثائق الموارد البشرية (TXT)\n+ ملفات الضوضاء (PDF, DOCX, PPTX)"] --> D2["محرك التحويل لمرة واحدة إلى JSON"]
-        D2 --> D3["تقطيع النصوص بمعرّفات حتمية ثابتة (UUID5)"]
-        D3 --> D4["فهرسة هجينة في Qdrant Cloud (Dense + BM25)"]
+    subgraph DataIngestion ["1. Data Ingestion & Indexing Subsystem"]
+        D1["Raw HR Policies (TXT)\n+ Distractor Noise (PDF, DOCX, PPTX)"] --> D2["Parse-Once-to-JSON Engine\n(src/ingestion/processor.py)"]
+        D2 --> D3["Deterministic Chunking & Stable UUID5\n(src/ingestion/splitter.py)"]
+        D3 --> D4["Qdrant Hybrid Vector Store (Dense + BM25 Sparse)\n(src/retrieval/vector_store.py)"]
     end
 
-    subgraph HybridRetrieval ["2. خط الاسترجاع وإعادة الترتيب (Hybrid Retrieval)"]
-        D4 <--> R1["استرجاع هجين أولي (Hybrid Fusion)"]
-        R1 --> R2["إعادة الترتيب الدقيقة (Cross-Encoder Re-ranker)"]
-        R2 --> R3["تصفية الضوضاء واختيار المقاطع الأكثر دقة"]
+    subgraph RetrievalAgent ["2. Hybrid Retrieval & Reasoning Subsystem"]
+        D4 <--> R1["Stage 1: Dense + Sparse Hybrid Search"]
+        R1 --> R2["Stage 2: Cross-Encoder High-Precision Re-ranking\n(src/retrieval/reranker.py)"]
+        R2 --> R3["Scope Filtering (Relevance Score >= 0.35)"]
+        R3 --> Agent["LangGraph ReAct Agent Loop\n(src/agent/agent.py)"]
     end
 
-    subgraph SecurityAndGen ["3. الأمان والتوليد المؤسسي (Security & Generation)"]
-        R3 --> S1["فحص دروع الحماية وحصار النطاق (Guardrails)"]
-        S1 --> S2["توليد الرد النهائي عبر Gemini مع الاستشهاد بالمصادر"]
+    subgraph SecurityGateway ["3. AI Security, Caching & Routing Subsystem"]
+        Agent --> L1["LiteLLM Gateway Router\n(Primary: Gemini / Fallback: Groq)"]
+        L1 --> L2["Multi-Layer Guardrails (Input & Output)\n(src/security/guardrails.py)"]
+        L2 --> L3["In-Memory Semantic Cache (FastEmbed ONNX)\n(src/security/semantic_cache.py)"]
+    end
+
+    subgraph ServingLayer ["4. Multi-Interface Serving Layer"]
+        L3 --> WebUI["Streamlit Web UI\n(Google OAuth2 / Port 8501)"]
+        L3 --> REST["FastAPI REST API Server\n(/api/v1/chat, /health / Port 8000)"]
     end
 ```
 
 ---
 
-## 3. الأهداف الهندسية والعملية للمشروع
+## 3. Technology Stack Summary
 
-1. **التعامل مع بيئات البيانات المشوشة (`Noisy Enterprise Databases`):**
-   * عزل وثائق الـ HR عن الضوضاء المؤسسية غير ذات الصلة (تقارير المبيعات، عروض العمليات، استراتيجيات التسويق) بالاعتماد على نماذج `Cross-Encoder`.
-2. **معمارية محلية مجانية بالكامل (`Local-First Zero-Cost Architecture`):**
-   * إمكانية تشغيل النظام واختباره وتطويره بالكامل دون تكاليف بنكية أو حاجة لفوترة سحابية إلزامية عبر Google Cloud Storage، مع الحفاظ على التوافق الكامل مع التوزيعات السحابية.
-3. **تطبيق دروع الحماية ومكافحة الهلوسة (`Zero-Hallucination & AI Security`):**
-   * إجبار النموذج على الاستشهاد الصريح باسم الوثيقة المصدرية ورقم المادة، ورفض الإجابة عند عدم العثور على المعلومة، وصد هجمات حقن التعليمات (`Prompt Injection`).
-4. **التخزين الهجين الحتمي (`Deterministic Upsert & Hybrid Search`):**
-   * منع تكرار البيانات داخل قاعدة المتجهات عبر المعرفات الحتمية `UUID5`، والجمع بين الفهم الدلالي (`Jina Embeddings`) والتطابق الحرفي للمصطلحات الإدارية (`BM25`).
+- **Orchestration**: LangGraph, LangChain Core, Python 3.12 / 3.11
+- **LLM Gateway & Inference**: LiteLLM Router, Google Gemini 3.5 Flash-Lite, Groq LPU (GPT-OSS-20B / Llama 3.3)
+- **Vector Database**: Qdrant Cloud (Hybrid Dense + Sparse Storage)
+- **Embeddings & Re-ranking**: FastEmbed (BM25 sparse & ONNX dense runtime), Jina AI Embeddings v2, Jina Cross-Encoder Reranker v2
+- **Document Extractors**: `pypdf`, `python-docx`, `python-pptx`
+- **Application Services & API**: FastAPI, Uvicorn, Pydantic v2, Pydantic-Settings
+- **Frontend & Auth**: Streamlit, Authlib, Google OAuth 2.0
+- **Observability & Testing**: LangSmith Tracing, Streamlit AppTest, Python unittest (53 automated tests)
+- **Containerization**: Docker, Docker Compose, Google Cloud Run

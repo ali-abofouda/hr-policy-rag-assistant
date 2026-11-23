@@ -1,152 +1,118 @@
-# معمارية المشروع ومراحل التطور الثلاث
-# (Project Architecture & Three-Phase Progressive Evolution)
+# System Architecture: Domain-Driven Modular Layout
 
----
+## 1. Architectural Philosophy
 
-## 1. القاعدة الهندسية لبناء الأنظمة الكبرى (The Cardinal Engineering Rule)
-
-في بناء أنظمة المؤسسات، هناك قاعدة صارمة تمثل الفارق بين "المطور السطحي" و"المهندس المعماري":
-> **"الأنظمة الكبرى لا تُبنى دفعة واحدة؛ بل تُبنى عبر مراحل تطورية تراكمية محكمة."**
-
-بناء أنظمة الإنتاج الحقيقية (`Production-Grade Enterprise Systems`) لا يتم عبر كتابة مئات الأسطر في ملف واحد؛ بل يتم عبر **التطور التراكمي المنظم (`Incremental Modular Evolution`)**. كل مرحلة تبني فوق ما قبلها وتختبره وتؤمنه.
-
----
-
-## 2. مراحل المشروع الثلاث وتطور الفروع البرمجية (`Three-Phase Git Evolution`)
-
-تم تقسيم المشروع إلى **ثلاث مراحل رئيسية** تتطابق حرفياً مع فروع المستودع المصدري (`Git Branches`) والمجلدات المستخرجة من السورس كود:
-
-```mermaid
-flowchart LR
-    subgraph Phase1 ["المرحلة الأولى: Local Hybrid RAG\n(Branch: basic-rag)"]
-        A1["تحميل وثائق الـ HR"] --> A2["التقطيع الدلالي والتضمين"]
-        A2 --> A3["إنشاء قاعدة Qdrant المشوشة"]
-        A3 --> A4["البحث الهجين Hybrid Search"]
-        A4 --> A5["إعادة الترتيب Cross-Encoder"]
-        A5 --> A6["وكيل LangGraph المحلي\nمع التوثيق الدقيق للمصدر"]
-    end
-
-    subgraph Phase2 ["المرحلة الثانية: AI Security & Guardrails\n(Branch: security)"]
-        B1["بوابة LiteLLM Gateway"] --> B2["الكاش الدلالي Semantic Cache"]
-        B2 --> B3["دروع الحماية Google Model Armor"]
-        B3 --> B4["الذاكرة الحوارية قصيرة المدى"]
-        B4 --> B5["اختبارات الفريق الأحمر Red Teaming"]
-    end
-
-    subgraph Phase3 ["المرحلة الثالثة: Production Deployment\n(Branch: deployment)"]
-        C1["بناء حاويات Docker المتعددة"] --> C2["النشر على Google Cloud Run"]
-        C2 --> C3["المصادقة عبر Google OAuth 2.0"]
-        C3 --> C4["التحقق النهائي والمراقبة الحية"]
-    end
-
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-```
-
----
-
-### تفكيك المراحل الهندسية الثلاث:
-
-#### 1. الطور الأول: الاسترجاع الهجين المحلي (`Phase 1: Local Hybrid RAG`)
-* **الهدف:** بناء محرك استرجاع يعمل محلياً بكفاءة 100% ويقدم إجابات موثوقة ومقتبسة مباشرة من اللوائح الرسمية.
-* **المكونات الأساسية:**
-  1. `data_ingestion_pipeline`: قراءة ومعالجة 10 لوائح رسمية للموارد البشرية.
-  2. `noisy_data_injection`: حقن 8 ملفات ضوضاء غير ذات صلة (تقارير مبيعات، عروض استراتيجية، كتيبات تشغيل مستودعات) لاختبار متانة النظام.
-  3. `qdrant_vector_store`: تخزين المتجهات في مجموعتين منفصلتين (`hr_policies` و `hr_policies_noisy_demo`).
-  4. `re_ranking_engine`: فلترة واستبعاد مقاطع الضوضاء بدقة عبر نماذج الـ `Cross-Encoder`.
-  5. `hr_assistant_agent`: وكيل مبني بـ `LangGraph` ينسق عملية البحث، الصياغة، وذكر اسم الوثيقة ورقم البند.
-
-#### 2. الطور الثاني: دروع الأمان واختبارات الاختراق (`Phase 2: LLM Security & Evals`)
-* **الهدف:** تحويل النظام من مجرد "شات بوت يجيب" إلى "نظام مؤسسي منيع" لا يمكن خداعه أو استغلاله.
-* **المكونات الأساسية:**
-  1. `litellm_gateway`: بوابة ذاتية الاستضافة لإدارة الاستدعاءات والتبديل التلقائي بين النماذج (`Fallback`).
-  2. `content_guardrails`: فلاتر لفحص مدخلات الموظف ورفض الأسئلة الخارجة عن نطاق العمل (`Out-of-Domain`).
-  3. `model_armor`: حماية النظام ضد هجمات كسر الموجهات (`Prompt Injection & Jailbreaks`).
-  4. `semantic_caching`: كاش ذكي يخزن الأسئلة الشائعة ويجيب عليها بزمن استجابة $0\text{ ms}$ دون تكلفة استدلال.
-  5. `red_teaming_harness`: حزمة هجمات برمجية مؤتمتة (`Persona Attack, Instruction Override, Roleplay Escape`) لتقييم مناعة النموذج.
-
-#### 3. الطور الثالث: النشر السحابي والحاويات (`Phase 3: Production Deployment`)
-* **الهدف:** تحويل الأكواد إلى منتج سحابي متاح لموظفي الشركة الحقيقيين عبر الإنترنت.
-* **المكونات الأساسية:**
-  1. `docker_containerization`: بناء صور Docker مخصصة لواجهة التطبيق ولبوابة الـ Gateway.
-  2. `google_cloud_run`: استضافة الحاويات سحابياً ببيئة بدون خوادم (`Serverless Container Platform`).
-  3. `google_oauth_rbac`: حصر الدخول على حسابات البريد الإلكتروني المعتمدة للموظفين فقط.
-
----
-
-## 3. المعمارية الهندسية ثلاثية الطبقات (`The 3-Layer Enterprise Model`)
-
-عند نشر التطبيق على السحابة، ينقسم النظام هندسياً إلى **3 طبقات مستقلة**:
+The architecture of the HR Policy Assistant is designed according to **Clean Architecture** and **Domain-Driven Design (DDD)** principles. The codebase decouples persistence, external APIs, and presentation frameworks from the foundational business logic.
 
 ```mermaid
 flowchart TD
-    subgraph Layer1 ["الطبقة الأولى: إدارة الهوية وبوابة الوصول (Layer 1: Identity & Access)"]
-        User["الموظف في المتصفح"] --> OAuth["Google OAuth 2.0 Identity Provider"]
-        OAuth --> WhiteListCheck{"هل البريد الإلكتروني\nضمن قائمة الموظفين البيضاء؟"}
-        WhiteListCheck -->|لا: رفض الدخول فوراً| Forbidden["403 Forbidden"]
-        WhiteListCheck -->|نعم: منح تصريح الوصول| Layer2
+    subgraph Presentation ["Presentation Layer"]
+        UI["Streamlit Web UI\n(app.py)"]
+        REST["FastAPI Application\n(src/main.py)"]
     end
 
-    subgraph Layer2 ["الطبقة الثانية: التطبيق الأساسي ومنطق الأعمال (Layer 2: Core Application)"]
-        direction TB
-        AppContainer["حاوية التطبيق المستضافة على Cloud Run\n(Streamlit UI + LangGraph Agent)"]
-        LocalCache["ذاكرة الجلسة الحوارية المؤقتة"]
-        AppContainer <--> LocalCache
+    subgraph Orchestration ["Application Services Layer"]
+        CS["Chat Service\n(src/services/chat_service.py)"]
     end
 
-    subgraph Layer3 ["الطبقة الثالثة: الخدمات والبنى التحتية الخارجية (Layer 3: External Services)"]
-        direction TB
-        LiteLLM["بوابة النماذج المستقلة\n(Self-Hosted LiteLLM Gateway)"]
-        QdrantService[("قاعدة المتجهات\nQdrant Cloud / Container")]
-        GeminiModel["نماذج الاستدلال الأساسية\nGoogle Vertex AI Gemini"]
-        GroqModel["نماذج الاستدلال الاحتياطية\nGroq LPU (Ultra-Low Latency)"]
-        
-        LiteLLM --> GeminiModel
-        LiteLLM -.->|Fallback في حالة الطوارئ| GroqModel
+    subgraph Domains ["Domain Packages"]
+        direction LR
+        Ingest["Ingestion Domain\n(src/ingestion/)"]
+        Retrieve["Retrieval Domain\n(src/retrieval/)"]
+        Sec["Security Domain\n(src/security/)"]
+        Agent["Agent Domain\n(src/agent/)"]
+        Eval["Evaluation Domain\n(src/evaluation/)"]
     end
 
-    Layer2 <-->|إرسال الاستعلامات المصفاة| LiteLLM
-    Layer2 <-->|البحث واسترجاع المتجهات| QdrantService
+    subgraph Core ["Core Infrastructure Layer"]
+        Conf["Pydantic Settings\n(src/core/config.py)"]
+        Log["Structured Logging\n(src/core/logging.py)"]
+        Trace["LangSmith Tracing\n(src/core/tracing.py)"]
+    end
+
+    UI --> CS
+    REST --> CS
+    CS --> Sec
+    CS --> Agent
+    Agent --> Retrieve
+    Ingest --> Retrieve
+    Eval --> CS
+    Domains --> Core
 ```
 
 ---
 
-## 4. أدلة التوثيق والأوامر المرجعية المتوفرة (`Docs & Commands Layout`)
+## 2. Directory Layout & Package Taxonomy
 
-وفرت حزمة السورس كود التي حصلنا عليها مرجعين هندسيين استثنائيين سنسير معهما بالتوازي:
-
-### أ. ملفات التوثيق الفنية (`16 Documentation Guides`):
-موجودة بالكامل في مسار السورس كود وتشرح كل مفهوم بالتفصيل:
-* `01-overview.md` & `02-tech-stack.md`: نظرة عامة ومعمارية الأدوات.
-* `03-document-processing.md` إلى `07-re-ranking.md`: تفاصيل استخراج وتنظيف وإعادة ترتيب المستندات.
-* `08-the-agent.md`: بناء منسق الـ LangGraph.
-* `09-reliability.md` & `10-evaluation-and-redteam.md`: الأمان واختبارات الاختراق.
-* `11-gcp-apis-and-iam.md` إلى `16-hosting-architecture.md`: السحابة والنشر والحاويات.
-
-### ب. ملفات الأوامر المباشرة (`Commands Reference`):
-* `commands-basic-rag.md`: أوامر إعداد الحساب السحابي، إنشاء بيئة العمل، وتنفيذ الفهرسة للمرحلة الأولى.
-* `commands-security.md`: أوامر تشغيل بوابة LiteLLM وفلاتر الحماية.
-* `commands-deployment.md`: أوامر بناء Docker والنشر على Google Cloud Run.
+```text
+projects/01-rag-applications/01-hr-policy-rag-assistant/
+├── src/                                  # Pure Domain-Driven Source Tree
+│   ├── main.py                           # FastAPI Application Factory & Lifespan
+│   │
+│   ├── core/                             # Cross-Cutting Concerns
+│   │   ├── config.py                     # Strict BaseSettings configuration
+│   │   ├── logging.py                    # Cloud-ready structured logger
+│   │   └── tracing.py                    # LangSmith telemetry hooks
+│   │
+│   ├── schemas/                          # Data Transfer Objects (DTOs)
+│   │   ├── chat.py                       # ChatRequest, Citation, ChatResponse
+│   │   └── health.py                     # ComponentStatus, HealthResponse
+│   │
+│   ├── api/                              # REST Interface & Dependency Providers
+│   │   ├── deps.py                       # Singleton assistant dependency
+│   │   └── v1/
+│   │       ├── router.py                 # Aggregated v1 endpoints
+│   │       └── endpoints/
+│   │           ├── chat.py               # POST /api/v1/chat endpoint
+│   │           └── health.py             # GET /health & GET /api/v1/health probe
+│   │
+│   ├── ingestion/                        # Document ETL Subsystem
+│   │   ├── processor.py                  # Binary parser (.pdf, .docx, .pptx, .txt)
+│   │   ├── document_loader.py            # Local & Cloud storage loader
+│   │   ├── splitter.py                   # Recursive character chunking
+│   │   └── ingestion.py                  # Dual-pipeline batch ingestion orchestrator
+│   │
+│   ├── retrieval/                        # Vector Store & Search Subsystem
+│   │   ├── embeddings.py                 # FastEmbed ONNX & Jina embedding models
+│   │   ├── vector_store.py               # Qdrant client, hybrid index, healthchecks
+│   │   └── reranker.py                   # High-precision Cross-Encoder re-ranker
+│   │
+│   ├── security/                         # AI Boundary Defense Subsystem
+│   │   ├── guardrails.py                 # Multi-layer safety guardrails
+│   │   └── semantic_cache.py             # Vector similarity semantic cache
+│   │
+│   ├── agent/                            # Reasoning & LLM Gateway Subsystem
+│   │   ├── agent.py                      # LangGraph ReAct state machine
+│   │   ├── tools.py                      # Scoped search tool ('search_hr_policy')
+│   │   ├── prompts.py                    # System prompts & operational boundaries
+│   │   ├── thread_memory.py              # Multi-turn conversation thread memory
+│   │   ├── llm.py                        # LiteLLM router & failover provider
+│   │   └── studio_graph.py               # LangGraph Studio export entrypoint
+│   │
+│   ├── evaluation/                       # Automated Quality Assurance Subsystem
+│   │   └── evaluation.py                 # RAG Triad evaluators & LLM-as-a-Judge
+│   │
+│   └── services/                         # Application Services Layer
+│       ├── chat_service.py               # Secure turn execution flow (ask)
+│       └── pipeline.py                   # Backward compatibility alias
+│
+├── tests/                                # 53 Automated Tests
+├── app.py                                # Streamlit Web UI with Google OAuth
+├── ingest.py                             # Ingestion CLI Entrypoint
+├── evaluate.py                           # Evaluation CLI Entrypoint
+├── Dockerfile                            # Production Container Definition
+└── docker-compose.yml                    # Microservice Orchestration
+```
 
 ---
 
-## 5. مصفوفة المفاضلة والتطور بين الفروع (Branch Evolution Matrix)
+## 3. Communication Patterns Across Boundaries
 
-| الخاصية الهندسية | فرع `basic-rag` (Phase 1) | فرع `security` (Phase 2) | فرع `deployment` (Phase 3) |
-| :--- | :--- | :--- | :--- |
-| **محرك الـ RAG** | هجين (Dense + Sparse + Re-ranker) | هجين مع كاش دلالي متقدم | هجين سحابي مؤمن بالكامل |
-| **الحماية والدروع** | غير مفعلة (تركيز على الدقة) | فلاتر Model Armor ومكافحة الحقن | دروع حماية مفعلة في الإنتاج |
-| **استدعاء النماذج** | استدعاء مباشر في الكود | عبر بوابة LiteLLM الموحدة | بوابة LiteLLM مع Fallback تلقائي |
-| **إدارة الهوية** | مفتوح محلياً للمطور | مفتوح محلياً للاختبار | مقيد بـ Google OAuth 2.0 و RBAC |
-| **بيئة التشغيل** | جهاز المطور المحلي | جهاز المطور مع خدمات Docker مساعدة | Google Cloud Run سحابي كامل |
-
----
-
-## 6. خطة التطبيق والوثائق التفصيلية
-
-تغطي الوثائق المعمارية التالية التنفيذ العملي لمكونات المرحلة الأولى:
-1. استراتيجية البيانات وتصميم مسار الضوضاء (`03-data-strategy.md`).
-2. إدارة الإعدادات المركزية والبيئة (`04-configuration-guide.md`).
-3. محرك معالجة الوثائق وتحويل الصيغ (`05-document-processing.md`).
-4. التقطيع والتخزين المتجهي الهجين (`06-chunking-and-vector-store.md`).
-5. أتمتة خط الإدخال والـ CLI (`07-ingestion-pipeline.md`).
+1. **Presentation to Service**:
+   - `app.py` and `src/api/v1/endpoints/chat.py` communicate exclusively with `src/services/chat_service.py` via `ask()` or `build_hr_assistant()`. Neither interface directly accesses the vector store or raw LLMs.
+2. **Service to Security**:
+   - `chat_service.py` executes safety screenings through `check_input()` before delegating work to the agent, and verifies generated content with `check_output()` before committing it to cache or returning it to users.
+3. **Agent to Retrieval**:
+   - The LangGraph agent interacts with Qdrant exclusively via the LangChain tool interface (`search_hr_policy`), which encapsulates dense/sparse search, candidate scoring, and re-ranking.
+4. **Data Contract Compliance**:
+   - All REST requests and responses conform to strict Pydantic models defined in `src/schemas/`, ensuring programmatic safety for external consumers.

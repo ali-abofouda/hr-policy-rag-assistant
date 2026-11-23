@@ -1,117 +1,52 @@
-# تحميل الوثائق وهندسة معالجة الصيغ المتعددة
-# (Document Loading & Multi-Format Parsing Architecture)
+# Document Processing: Parse-Once-to-JSON Pattern & Binary Parsers
 
----
+## 1. Architectural Motivation
 
-## 1. المدخل المعماري: مرحلة الإدخال والتحويل (`Ingestion & Transformation`)
+In high-throughput enterprise pipelines, parsing complex binary files (such as multi-page PDFs, complex Word documents with tables, and PowerPoint presentations) directly during vector ingestion creates severe compute bottlenecks and slows down CI/CD testing.
 
-تعتبر مرحلة تحميل وتجهيز البيانات (`Document Loading & Processing`) بمثابة صمام الأمان لأي نظام RAG حقيقي. جودة الإجابات التي يولدها الذكاء الاصطناعي تعتمد بنسبة 100% على جودة ونظافة النصوص المستخلصة من الوثائق الأصلية:
-
-$$\text{Garbage In} \implies \text{Garbage Out}$$
-
-تتكامل في هذه المرحلة **أربعة موديولات أساسية**:
-1. **`prompts.py`**: صياغة موجه النظام الحاكم لسلوك وكيل الموارد البشرية (`System Prompt`).
-2. **`logging_config.py`**: تأسيس نظام المراقبة وتسجيل الأحداث (`Structured Console Logging`).
-3. **`document_loader.py`**: محرك قراءة واستخراج البيانات وتغليفها في كائنات `LangChain Document`.
-4. **`processor.py`**: محرك تفكيك ومعالجة الصيغ الثنائية المعقدة (`PDF`, `DOCX`, `PPTX`) وتحويلها إلى سجلات `JSON` موحدة.
-
----
-
-## 2. هندسة موجه النظام لوكيل الـ HR (`Prompt Engineering Philosophy`)
-
-تم عزل الموجهات في ملف مستقل `prompts.py` لأنه يمثل **التكوين السلوكي (`Behavioral Configuration`)** للنظام، وليس مجرد إعدادات تقنية.
-
-```mermaid
-flowchart TD
-    UserQuery["استفسار الموظف"] --> SystemPrompt["موجه النظام (SYSTEM_PROMPT)"]
-    
-    subgraph Constraints ["الضوابط الصارمة في الموجه"]
-        C1["إلزامية البحث في اللوائح:\n(Always use search_hr_policy)"]
-        C2["مكافحة الهلوسة الصارمة:\n(If not in results -> Say I don't know)"]
-        C3["التوثيق ونسب الفضل للمصدر:\n(Cite policy document name)"]
-        C4["حصر النطاق في شؤون الموظفين فقط:\n(Polite Out-of-Domain Refusal)"]
-        C5["التكيف مع عمق السؤال:\n(Adaptive Length: Brief vs Structured Detail)"]
-    end
-
-    SystemPrompt --> Constraints
-    Constraints --> GroundedResponse["إجابة أمينة ودقيقة ومقتبسة"]
-```
-
-### القواعد الخمس الحاكمة لوكيل الموارد البشرية:
-1. **الأولوية المطلقة للاسترجاع (`Tool-First Answering`)**:
-   لا يجوز للنموذج الإجابة من ذاكرته العامة مسبقة التدريب؛ بل يجب عليه استدعاء أداة البحث في لوائح الشركة أولاً.
-2. **مكافحة الهلوسة (`Zero-Hallucination Guardrail`)**:
-   إذا لم يجد الوكيل الإجابة صراحة في نتائج البحث، يُلزم بقول: *"لا أعلم، هذه المعلومة غير واردة في لوائح الشركة"* بدلاً من التخمين.
-3. **التوثيق ونسب المصدر (`Source Attribution & Citation`)**:
-   كل رد يجب أن يذكر اسم الوثيقة الرسمية المستند عليها (مثل: `leave_policy.txt` أو `exit_process_policy.txt`).
-4. **حصار النطاق الإداري (`Strict Domain Fence`)**:
-   رفض أي أسئلة خارج نطاق الـ HR (مثل أسئلة البرمجة، الشؤون المالية للشركة، أو إعداد القهوة).
-5. **الطول التكيفي للإجابة (`Adaptive Length`)**:
-   * الأسئلة المحددة السريعة $\implies$ إجابة مركزة وموجزة في سطرين.
-   * الأسئلة العريضة والتفصيلية $\implies$ إجابة مهيكلة بنقاط ورؤوس موضوعات شاملة.
-
----
-
-## 3. معالجة الصيغ المتعددة والتحويل لصيغة موحدة (`processor.py`)
-
-في الشركات الحقيقية، لا تأتي وثائق الضوضاء كملفات نصية نقية، بل تأتي في صيغ ثنائية مختلفة:
-* ملفات **PDF**: تستخرج النصوص بواسطة مكتبة `pypdf.PdfReader` مع تجميع صفحات المستند.
-* ملفات **Word (.docx)**: تستخرج الفقرات النصية بواسطة مكتبة `python-docx`.
-* عروض **PowerPoint (.pptx)**: تستخرج العناوين والأشكال التوضيحية ومربعات النصوص بواسطة `python-pptx`.
+To solve this, the pipeline adopts the **Parse-Once-to-JSON Pattern**:
+1. Raw binaries are read by specialized parsers inside `src/ingestion/processor.py`.
+2. Extracted text and metadata are saved as structured, normalized JSON records in `data/processed/`.
+3. Downstream vector embedding and chunking operations read purely from intermediate JSON files, bypassing binary parsing entirely.
 
 ```mermaid
 flowchart LR
-    PDF["ملف PDF ثنائي"] --> PDFParser["pypdf Reader"]
-    DOCX["ملف Word ثنائي"] --> DocxParser["python-docx Reader"]
-    PPTX["ملف PowerPoint"] --> PPTXParser["python-pptx Reader"]
-    TXT["ملف نصي TXT"] --> DirectRead["قراءة نصية مباشرة"]
+    PDF[".pdf"] --> Parsers["processor.py\n(pypdf / python-docx / python-pptx)"]
+    DOCX[".docx"] --> Parsers
+    PPTX[".pptx"] --> Parsers
+    TXT[".txt"] --> Parsers
 
-    PDFParser --> Normalize["استخراج النصوص الخام وتجريد الفراغات"]
-    DocxParser --> Normalize
-    PPTXParser --> Normalize
-    DirectRead --> Normalize
-
-    Normalize --> StandardJSON["سجل JSON موحد:\n{source, policy_category, text, path}"]
-```
-
-### المبدأ المعماري: المعالجة لمرة واحدة فقط (`Parse Once, Store JSON`)
-لماذا نقوم بتحويل الملفات الثنائية إلى `JSON`؟
-* تفكيك ملفات الـ `PDF` و `PPTX` بالذكاء الاصطناعي يستهلك وقتاً ومعالجة حسابية عالية (`CPU-Intensive`).
-* يقوم موديول `processor.py` بفك هذه الملفات **مرة واحدة فقط** وتخزينها كسجلات `JSON` جاهزة، بحيث عند إعادة بناء قاعدة المتجهات أو عمل `Re-index`، يقرأ خط الفهرسة نصوص الـ JSON مباشرة في أجزاء من الثانية.
-
----
-
-## 4. محرك استخراج الفئات والتحميل (`document_loader.py`)
-
-### أ. استخراج الفئة الوظيفية (`extract_policy_category`)
-تبدأ كل وثيقة من وثائق الشركة في أسطرها الخمسة الأولى بسطر وصفي:
-* في لوائح الـ HR: `Policy Category: Leave Policy`
-* في ملفات الضوضاء: `Category: Finance Report`
-تقوم الدالة بفحص الأسطر الأولى واستخراج الفئة ووضعها داخل الـ `metadata` الخاصة بالمستند، مما يتيح للـ Vector Store لاحقاً تصفية النتائج بناءً على هذه الفئة.
-
-### ب. هيكل كائن `LangChain Document`
-كل مستند يتم تحويله في الذاكرة إلى كائن قياسي موحد:
-```python
-Document(
-    page_content="النص الصافي المستخرج من الملف...",
-    metadata={
-        "source": "leave_policy.txt",
-        "policy_category": "Leave Policy"
-    }
-)
+    Parsers --> JSON["Structured JSON Records\n(data/processed/*.json)"]
+    JSON --> Ingestion["Vector Ingestion Engine\n(src/ingestion/ingestion.py)"]
 ```
 
 ---
 
-## 5. مصفوفة مقارنة أدوات معالجة الملفات في بايثون
+## 2. Multi-Format Binary Parsers
 
-| صيغة الملف | المكتبة المعتمدة في المشروع | البدائل الممكنة | سبب الاختيار |
-| :--- | :--- | :--- | :--- |
-| **PDF** | `pypdf` | `pdfplumber`, `PyMuPDF (fitz)` | خفيفة، مفتوحة المصدر، متوافقة 100% مع بيئات السحابة والـ Docker |
-| **DOCX** | `python-docx` | `mammoth`, `unstructured` | المعيار القياسي في بايثون لقراءة ملفات ميكروسوفت وورد المهيكلة |
-| **PPTX** | `python-pptx` | `unstructured` | تدعم فحص مربعات النصوص والعناوين داخل كل شريحة بشكل متسلسل |
-| **TXT** | بايثون القياسي (`utf-8`) | — | قراءة سريعة جداً بدون أي مكتبات خارجية |
+The module `src/ingestion/processor.py` implements dedicated extractors for each document type:
+
+| File Extension | Parsing Engine | Extraction Strategy |
+| :--- | :--- | :--- |
+| `.pdf` | `pypdf.PdfReader` | Iterates across pages, extracts text blocks, strips zero-width spaces, and normalizes line breaks. |
+| `.docx` | `docx.Document` | Traverses paragraphs and tables, aggregating cells into structured tab-separated rows. |
+| `.pptx` | `pptx.Presentation` | Iterates across slides and text shapes, preserving slide titles and bullet-point hierarchies. |
+| `.txt` | Native Python I/O | Reads raw UTF-8 text with BOM detection and whitespace normalization. |
 
 ---
 
-بهذا تكتمل المعمارية الهندسية لمرحلة تحميل ومعالجة الوثائق، وتتناول الوثيقة التالية (`06-chunking-and-vector-store.md`) مرحلة التقطيع الدلالي، استدعاء نماذج التضمين، والتخزين الفعلي داخل قاعدة `Qdrant`.
+## 3. Standardized Intermediate JSON Schema
+
+Every parsed document is committed to disk according to a uniform JSON payload:
+
+```json
+{
+  "source_file": "leave_policy.txt",
+  "document_category": "Leave",
+  "total_characters": 3420,
+  "extraction_timestamp": "2026-11-23T08:00:00Z",
+  "content": "Full extracted plain text payload without binary artifacts..."
+}
+```
+
+This ensures downstream components remain completely agnostic to original source file formats.

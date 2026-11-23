@@ -1,154 +1,64 @@
-# أتمتة وتنسيق خط إدخال البيانات
-# (Data Ingestion Pipeline Orchestration & CLI Interface)
+# Ingestion Pipeline: SOLID Ingestion Orchestration & CLI Automation
 
----
+## 1. Pipeline Architecture & SOLID Principles
 
-## 1. المدخل المعماري: من الوحدات المنفصلة إلى خط الأنابيب المتكامل
+The batch ingestion subsystem (`src/ingestion/ingestion.py`) orchestrates the loading, chunking, embedding, and indexing of corporate documents. The pipeline adheres strictly to **SOLID design principles**:
 
-تتكامل الوحدات البرمجية للنظام التي تم تصميمها مسبقاً في معزل (`In Isolation`):
-* قراءة ومعالجة المستندات المحلية ومتعددة الصيغ (`document_loader.py` و `processor.py`).
-* تجزئة النصوص وتوليد المعرفات الحتمية الثابتة (`splitter.py`).
-* التضمين الدلالي الهجين وحفظ المتجهات في السحابة (`embeddings.py` و `vector_store.py`).
-
-الهدف الأساسي لهذا الموديول هو **العزف والتنسيق الجماعي (`Pipeline Orchestration`)**، حيث يتم ربط هذه الوحدات داخل محرك موحد لإدخال البيانات (`Ingestion Engine`)، مع إتاحة التحكم الكامل فيه عبر واجهة سطر الأوامر (`CLI`).
+- **Single Responsibility Principle (SRP)**: Parsing, chunking, vector generation, and Qdrant indexing are encapsulated in distinct classes and functions.
+- **Open/Closed Principle (OCP)**: New file formats (e.g. `.html` or `.markdown`) can be registered in `processor.py` without modifying downstream vector indexing logic.
+- **Dependency Inversion Principle (DIP)**: Ingestion modules depend on high-level embeddings and vector store abstractions rather than hardcoded client instances.
 
 ```mermaid
 flowchart TD
-    subgraph IsolatedUnits ["الوحدات المنفصلة السابقة (Isolated Units)"]
-        U1["document_loader.py"]
-        U2["processor.py"]
-        U3["splitter.py"]
-        U4["vector_store.py"]
-    end
-
-    subgraph OrchestrationLayer ["طبقة التنسيق الموحدة (Orchestration Layer)"]
-        P1["IngestionPipeline (ingestion.py)"]
-        P2["LocalHRLoaderStrategy"]
-        P3["LocalNoisyCorpusLoaderStrategy"]
-    end
-
-    subgraph EntryPoint ["نقطة الدخول والتشغيل (CLI Entrypoint)"]
-        CLI["ingest.py\n(--force, --hr-only, --noisy-only)"]
-    end
-
-    IsolatedUnits --> OrchestrationLayer
-    OrchestrationLayer --> EntryPoint
+    Start(["Start Ingestion"]) --> ProcessStep["1. Parse Raw Files to JSON\n(process_raw_to_json)"]
+    ProcessStep --> LoadStep["2. Load Documents into Memory\n(load_documents)"]
+    LoadStep --> SplitStep["3. Recursive Chunking & UUID5 ID\n(split_into_chunks)"]
+    SplitStep --> EmbedStep["4. Hybrid Sparse + Dense Embedding\n(FastEmbed ONNX + Jina)"]
+    EmbedStep --> UpsertStep["5. Upsert Batch to Qdrant Cloud\n(insert_documents)"]
+    UpsertStep --> Done(["Ingestion Complete"])
 ```
 
 ---
 
-## 2. تطبيق مبادئ التصميم SOLID في بناء خط الأنابيب
+## 2. Dual Pipeline Support: Clean vs. Noisy Corpus
 
-تم بناء موديول `hr_assistant/ingestion.py` وفقاً لأعلى معايير هندسة البرمجيات لتفادي الاعتماد المباشر على مصادر بيانات محددة وتسهيل التوسع المستقبلي:
+To facilitate red teaming and adversarial robustness testing, the ingestion engine provides two isolated pipelines:
 
-### أ. مبدأ المسؤولية الواحدة (Single Responsibility Principle - SRP)
-* تم فصل استراتيجية قراءة البيانات (`Loader Strategies`) عن منطق التجزئة والرفع (`IngestionPipeline`).
-* الـ Pipeline مسؤول فقط عن تنسيق التدفق: `Load -> Chunk -> Upsert`.
-
-### ب. مبدأ الانفتاح/الانغلاق (Open/Closed Principle - OCP)
-* يمكن إضافة أي مصدر بيانات جديد (مثل قاعدة بيانات SQL أو Google Drive أو Notion) بمجرد كتابة فئة تطبق بروتوكول `DocumentLoaderStrategy` دون الحاجة لتعديل سطر كود واحد داخل `IngestionPipeline`.
-
-### ج. مبدأ استبدال لسكوف (Liskov Substitution Principle - LSP) ومبدأ فصل الواجهات (ISP)
-* تم استخدام `typing.Protocol` مع `@runtime_checkable` لتعريف واجهة رشيقة وصريحة:
-  ```python
-  @runtime_checkable
-  class DocumentLoaderStrategy(Protocol):
-      def load(self) -> List[Document]:
-          ...
-  ```
-  أي استراتيجية تطبق هذه الدالة قابلة للاستبدال الفوري دون أي آثار جانبية.
-
-### د. مبدأ عكس التبعية (Dependency Inversion Principle - DIP)
-* فئة `IngestionPipeline` تعتمد على التجريدات (`Callables` و `Protocols`) وتستقبل دوال التقطيع والبناء عبر حقن التبعيات (`Dependency Injection`):
-  ```python
-  class IngestionPipeline:
-      def __init__(
-          self,
-          chunker: Callable[[List[Document]], List[Document]] = split_into_chunks,
-          vector_store_builder: Callable[..., Any] = build_vector_store,
-          collection_checker: Callable[[str], bool] = collection_exists,
-      ) -> None:
-          ...
-  ```
+1. **Clean Production Pipeline (`ingest_hr_policies`)**:
+   - Source: `data/policies/*.txt`
+   - Destination Collection: `hr_policies`
+   - Target Use Case: Production employee query serving.
+2. **Mixed Stress-Testing Pipeline (`ingest_noisy_corpus`)**:
+   - Source: `data/policies/*.txt` + `data/noise/*.*` (finance, contracts, slides)
+   - Destination Collection: `hr_policies_noisy_demo`
+   - Target Use Case: Adversarial testing to ensure non-HR documents are strictly rejected by scope guardrails and re-rankers.
 
 ---
 
-## 3. مسارا الحقن المزدوج (Dual Ingestion Pathways)
+## 3. Command-Line Interface (`ingest.py`)
 
-يدير المنسق مسارين متوازيين تماماً للبيانات:
-
-```mermaid
-flowchart TD
-    CLI["واجهة الأوامر ingest.py"] --> Choice{"تحديد النطاق (Scope)"}
-
-    Choice -->|Clean HR Policies| HR_Path["مسار لوائح الموارد البشرية الرسمية"]
-    Choice -->|Noisy Benchmark Corpus| Noise_Path["مسار البيانات المشوشة للاختبار"]
-
-    subgraph CleanPath ["1. خط اللوائح النظيفة (Production Ready)"]
-        HR_Path --> L1["LocalHRLoaderStrategy\n(data/policies/*.txt)"]
-        L1 --> C1["تجزئة إلى 68 مقطعاً متداخلاً"]
-        C1 --> Q1[("مجموعة Qdrant:\nhr_policies")]
-    end
-
-    subgraph BenchmarkPath ["2. خط البيانات المشوشة (Stress Testing)"]
-        Noise_Path --> L2["LocalNoisyCorpusLoaderStrategy\n(data/processed/**/*.json)"]
-        L2 --> C2["تجزئة المستندات والضوضاء المعالجة"]
-        C2 --> Q2[("مجموعة Qdrant:\nhr_policies_noisy_demo")]
-    end
-```
-
-### المقارنة المعمارية بين المجموعتين:
-
-| وجه المقارنة | مجموعة الإنتاج (`hr_policies`) | مجموعة اختبار الضغط (`hr_policies_noisy_demo`) |
-| :--- | :--- | :--- |
-| **مصدر البيانات** | 10 لوائح إدارية نصية نقية (`data/policies/*.txt`) | 10 لوائح إدارية + 8 ملفات ضوضاء ثنائية (`data/processed`) |
-| **طبيعة المحتوى** | سياسات الإجازات، مكافآت العمل، ضوابط السلوك، إنهاء الخدمة | سياسات إدارية + تقارير مبيعات إقليمية، عروض تسويق، ميزانيات تشغيل |
-| **الهدف الهندسي** | استرجاع مباشر وسريع للإجابات اليومية الموثوقة | اختبار قدرة محرك إعادة الترتيب (`Re-ranker`) على تصفية الضوضاء |
-| **طريقة التوليد** | مباشرة عبر نصوص اللوائح | عبر تحويل الوثائق الثنائية (`PDF/DOCX/PPTX`) إلى `JSON` موحد |
-
----
-
-## 4. التحكم عبر سطر الأوامر والتخطي الذكي (`CLI & Idempotency`)
-
-يوفر الملف [`ingest.py`](file:///D:/Code/ai-ml/rag-mastery/projects/01-rag-applications/01-hr-policy-rag-assistant/ingest.py) واجهة سطر أوامر سهلة ومحمية:
+The pipeline is driven via `ingest.py` supporting granular flags:
 
 ```bash
-# 1. إدخال لوائح الموارد البشرية فقط (الافتراضي - يتخطى الفهرسة إذا كانت المجموعة تحتوي نقاطاً بالفعل):
+# Ingest both clean HR policies and noisy test corpus
 python ingest.py
 
-# 2. إدخال المجموعة المشوشة فقط لاختبارات الإجهاد:
-python ingest.py --noisy-only
-
-# 3. إجبار خط الأنابيب على مسح وإعادة بناء المجموعات من الصفر (Force Rebuild):
+# Force re-ingestion and overwrite existing collections
 python ingest.py --force
 
-# 4. تشغيل متوافق مع أوامر الكورس السحابية القديمة (يتجاهل الرفع السحابي محلياً):
-python ingest.py --no-upload
+# Ingest only official HR policy documents
+python ingest.py --hr-only
+
+# Ingest only synthetic noisy distractor files
+python ingest.py --noisy-only
 ```
 
-### خوارزمية التخطي الذكي وحماية التكلفة (`Smart Idempotency`)
-قبل استدعاء نماذج التضمين (`Jina Embeddings`) وحرق التوكنات، يقوم خط الأنابيب بفحص المستودع:
-```python
-if self.collection_checker(collection_name) and not force:
-    logger.info("Collection '%s' already exists with indexed points. Skipping ingestion.", collection_name)
-    return 0
+### Automated Ingestion Logs:
+```text
+[INFO] Processing raw files to JSON in data/processed/...
+[INFO] Loading parsed JSON policy documents...
+[INFO] Split into 48 policy chunks.
+[INFO] Computing dense and sparse embeddings via FastEmbed...
+[INFO] Upserting 48 points into Qdrant collection 'hr_policies'...
+[INFO] Ingestion completed successfully in 3.42s.
 ```
-هذا يضمن أن إعادة تشغيل الأمر عن طريق الخطأ لن تعيد استهلاك رصيد الـ API ولن تستغرق وقتاً إضافياً.
-
----
-
-## 5. اختبارات الوحدة الآلية (`tests/test_ingestion.py`)
-
-تم تأكيد صحة منطق خط الأنابيب عبر اختبارات محاكاة معزولة بالكامل دون الحاجة للاتصال بالإنترنت:
-1. **اختبار التوافق البروتوكولي (`Protocol Compliance`):** التأكد من أن كل فئة تحميل تطبق واجهة `DocumentLoaderStrategy`.
-2. **اختبار التخطي التلقائي (`Idempotency Test`):** التحقق من أن الـ Chunker ومستودع المتجهات لا يتم استدعاؤهما نهائياً إذا كانت المجموعة ممتلئة و `force=False`.
-3. **اختبار الإجبار على التحديث (`Force Execution Test`):** التحقق من تدمير وإعادة بناء المقاطع عند ضبط `force=True`.
-
----
-
-## 6. ملخص إنجازات خط الأنابيب (Ingestion Milestones)
-
-* [x] بناء منسق الـ Ingestion الموحد `hr_assistant/ingestion.py` بمعايير SOLID.
-* [x] دعم بنية محلية 100% دون الحاجة إلى Google Cloud Storage مع الحفاظ على التوافق السحابي.
-* [x] إطلاق واجهة سطر الأوامر `ingest.py` مع وسائط التحكم بالكامل.
-* [x] تغطية الموديول باختبارات وحدة آلية شاملة بنسبة نجاح 100%.
