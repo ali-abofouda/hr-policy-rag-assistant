@@ -32,7 +32,7 @@ COPY src/ ./src/
 COPY data/ ./data/
 
 # Copy standalone runtime entrypoints
-COPY app.py ingest.py evaluate.py main.py ./
+COPY app.py ingest.py evaluate.py ./
 
 # Expose standard Cloud Run port
 EXPOSE 8080
