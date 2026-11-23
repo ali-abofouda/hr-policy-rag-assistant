@@ -1,4 +1,4 @@
-# Production Container for HR Policy RAG Assistant (Streamlit on Google Cloud Run)
+# Production Container for HR Policy RAG Assistant (Streamlit & FastAPI on Google Cloud Run)
 FROM python:3.11-slim
 
 # Prevent Python from writing .pyc files and buffer stdout/stderr
@@ -26,8 +26,9 @@ RUN uv pip install --system --no-cache -r requirements.txt
 # to eliminate cold-start latency when running on serverless Google Cloud Run
 RUN python -c "from fastembed import SparseTextEmbedding; SparseTextEmbedding(model_name='Qdrant/bm25')"
 
-# Copy core application package and data directory
+# Copy core application packages and data directory
 COPY hr_assistant/ ./hr_assistant/
+COPY src/ ./src/
 COPY data/ ./data/
 
 # Copy standalone runtime entrypoints

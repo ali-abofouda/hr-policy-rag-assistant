@@ -1,11 +1,10 @@
 # Microservice Architecture for HR Policy RAG Assistant
 # Usage:
-#   Start Web App:                 docker compose up -d app
+#   Start Streamlit Web App:       docker compose up -d app
+#   Start FastAPI Backend API:     docker compose up -d api
 #   Run Ingestion Pipeline:        docker compose --profile tools run --rm ingest
 #   Run Quality Evaluation:        docker compose --profile tools run --rm eval
 #   View App Logs:                 docker compose logs -f app
-
-version: "3.8"
 
 services:
   app:
@@ -27,6 +26,23 @@ services:
       --server.headless=true
       --server.enableCORS=false
       --server.enableXsrfProtection=false
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr-policy-assistant-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PORT=8000
+    restart: unless-stopped
+    command: >
+      uvicorn src.main:app
+      --host 0.0.0.0
+      --port 8000
 
   ingest:
     build:

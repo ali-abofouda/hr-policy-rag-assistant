@@ -29,6 +29,11 @@ requests
 streamlit
 authlib
 
+# Production REST API & Server
+fastapi
+uvicorn[standard]
+pydantic-settings
+
 # Local Visual Debugger & Telemetry
 langgraph-cli[inmem]
 langsmith

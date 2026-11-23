@@ -46,44 +46,51 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 ```text
 01-hr-policy-rag-assistant/
 ├── README.md               # Architecture specification and manual
-├── requirements.txt        # Pinned project dependencies
+├── requirements.txt        # Pinned project dependencies (FastAPI, Streamlit, Qdrant, etc.)
+├── Dockerfile              # Production container with build-time BM25 pre-download
+├── docker-compose.yml      # Microservices (app, api, ingest, eval)
 ├── .env.example            # Environment template
-├── ingest.py               # Ingestion pipeline CLI entry point (--force, --hr-only, --noisy-only)
-├── docs/                   # Engineering architecture and system design manual
-│   ├── README.md           # Master documentation index and architecture map
-│   ├── 01-system-overview.md
-│   ├── 02-system-architecture.md
-│   ├── 03-data-strategy.md
-│   ├── 04-configuration-guide.md
-│   ├── 05-document-processing.md
-│   ├── 06-chunking-and-vector-store.md
-│   ├── 07-ingestion-pipeline.md
-│   └── 08-retrieval-and-agent-pipeline.md
-├── commands/
-│   └── commands-basic-rag.md # Local-first execution and testing commands
-├── hr_assistant/           # Core production package
-│   ├── __init__.py
-│   ├── config.py           # Centralized settings and environment validation
-│   ├── logging_config.py   # Process-wide logging configuration
-│   ├── prompts.py          # System prompts and behavioral guidelines
-│   ├── document_loader.py  # Local and cloud document loaders (LangChain Documents)
-│   ├── processor.py        # Multi-format binary parser (.pdf, .docx, .pptx, .txt)
-│   ├── splitter.py         # Recursive character text chunking (500/60 overlap)
-│   ├── embeddings.py       # Jina AI embeddings with local FastEmbed ONNX fallback
-│   ├── vector_store.py     # Qdrant hybrid vector store, stable IDs, payload index
-│   ├── ingestion.py        # SOLID ingestion orchestrator (Dual pipelines: Clean & Noisy)
-│   ├── llm.py              # LLM factory (Google AI Studio & Vertex AI Gemini)
-│   ├── reranker.py         # Cross-Encoder re-ranker (Jina API & local semantic fallback)
-│   ├── tools.py            # Retriever-as-a-tool pattern ('search_hr_policy')
-│   └── agent.py            # LangGraph conversational agent with MemorySaver memory
+├── ingest.py               # Ingestion pipeline CLI entry point
+├── evaluate.py             # Evaluation pipeline CLI entry point
+├── app.py                  # Streamlit web application with Google OAuth IAM
+├── src/                    # Enterprise modular package layout
+│   ├── main.py             # FastAPI application factory and entry point
+│   ├── core/               # Enterprise configuration and logging
+│   │   ├── config.py       # Pydantic v2 BaseSettings with strict validation
+│   │   ├── logging.py      # Structured cloud-ready logger
+│   │   └── __init__.py
+│   ├── schemas/            # Strict Pydantic v2 Data Transfer Objects (DTOs)
+│   │   ├── chat.py         # ChatRequest, Citation, ChatResponse
+│   │   ├── health.py       # ComponentStatus, HealthResponse
+│   │   └── __init__.py
+│   ├── api/                # FastAPI dependency injection & routers
+│   │   ├── deps.py         # Singleton assistant dependency provider
+│   │   └── v1/
+│   │       ├── router.py   # Aggregated v1 endpoints
+│   │       └── endpoints/
+│   │           ├── chat.py # POST /api/v1/chat (Grounded RAG REST endpoint)
+│   │           └── health.py # GET /health & GET /api/v1/health probe
+│   └── services/           # Decoupled core business logic
+│       ├── agent.py        # LangGraph agent graph
+│       ├── pipeline.py     # Secure ask() pipeline with screening & caching
+│       ├── guardrails.py   # Input/output safety screening
+│       ├── semantic_cache.py # Semantic caching engine
+│       ├── embeddings.py   # Hybrid embeddings with ONNX fallback
+│       ├── vector_store.py # Qdrant client & healthcheck probe
+│       └── reranker.py     # High-precision Cross-Encoder
+├── hr_assistant/           # Backward-compatibility bridge (preserves all legacy imports)
 ├── data/
 │   ├── policies/           # 10 official HR policy documents (.txt)
 │   ├── noise/              # 8 synthetic enterprise distractor files (.pdf, .docx, .pptx, .txt)
 │   └── processed/          # Pre-parsed JSON records (hr-policies/ and other-data/)
-├── tests/                  # Automated unit and integration test suites
-│   ├── test_splitter_and_vectorstore.py
-│   ├── test_ingestion.py
-│   └── test_retrieval_agent.py
+├── tests/                  # Automated unit and integration test suites (53 tests)
+│   ├── test_api.py         # FastAPI REST endpoints & schema validation tests
+│   ├── test_app.py         # Streamlit AppTest integration
+│   ├── test_container_and_access_control.py
+│   ├── test_pipeline.py
+│   ├── test_guardrails.py
+│   ├── test_semantic_cache.py
+│   └── ...
 └── hrrenv/                 # Isolated Python 3.12 virtual environment
 ```
 
