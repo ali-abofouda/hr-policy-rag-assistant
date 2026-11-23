@@ -18,10 +18,10 @@ from langsmith import Client
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import CORRECTNESS_PROMPT, RAG_GROUNDEDNESS_PROMPT
 
-from hr_assistant import config
-from hr_assistant.pipeline import ask, build_hr_assistant
-from hr_assistant.tracing import check_langsmith_tracing
-from hr_assistant.vector_store import load_vector_store
+from src.core import config
+from src.services.chat_service import ask, build_hr_assistant
+from src.core.tracing import check_langsmith_tracing
+from src.retrieval.vector_store import load_vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -213,7 +213,7 @@ def create_evaluators(judge_llm: ChatOpenAI) -> List[Callable]:
 
 def make_target_function(agent: Any, cache: Any, vector_store: Any) -> Callable:
     """Construct evaluation target that invokes secured ask() and extracts retrieved context."""
-    from hr_assistant.semantic_cache import SemanticCache
+    from src.security.semantic_cache import SemanticCache
 
     retriever = vector_store.as_retriever(search_kwargs={"k": config.TOP_K_RESULTS})
 

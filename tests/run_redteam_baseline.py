@@ -9,8 +9,8 @@ import os
 import sys
 import time
 
-from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import ask_plain, build_plain_assistant
+from src.core.logging import configure_logging
+from src.services.chat_service import ask_plain, build_plain_assistant
 
 ATTACKS = [
     (

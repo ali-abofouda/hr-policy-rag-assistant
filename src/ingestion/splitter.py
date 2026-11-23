@@ -9,7 +9,7 @@ from typing import List, Optional
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from hr_assistant import config
+from src.core import config
 
 
 def split_into_chunks(

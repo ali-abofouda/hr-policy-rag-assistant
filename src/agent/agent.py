@@ -17,7 +17,7 @@ from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools import BaseTool
 
-from hr_assistant import prompts
+from src.agent import prompts
 
 logger = logging.getLogger(__name__)
 

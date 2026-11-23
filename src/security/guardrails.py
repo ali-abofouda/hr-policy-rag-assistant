@@ -22,7 +22,7 @@ import re
 from typing import Tuple
 from pydantic import BaseModel, Field
 
-from hr_assistant import config
+from src.core import config
 try:
     from langsmith import traceable
 except ImportError:
@@ -126,7 +126,7 @@ def _gemini_lite_client():
     """Lazily initialize structured output model for safety screening."""
     global _gemini_lite_llm
     if _gemini_lite_llm is None:
-        from hr_assistant.llm import get_llm
+        from src.agent.llm import get_llm
 
         _gemini_lite_llm = get_llm().with_structured_output(_SafetyVerdict)
     return _gemini_lite_llm

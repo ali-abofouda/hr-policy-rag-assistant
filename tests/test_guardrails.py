@@ -4,10 +4,10 @@ import unittest
 from unittest.mock import MagicMock, patch
 from langchain_core.documents import Document
 
-from hr_assistant import config
-from hr_assistant import prompts
-from hr_assistant.guardrails import check_input, check_output
-from hr_assistant.tools import create_guarded_search_tool, NOT_FOUND_SENTINEL
+from src.core import config
+from src.agent import prompts
+from src.security.guardrails import check_input, check_output
+from src.agent.tools import create_guarded_search_tool, NOT_FOUND_SENTINEL
 
 
 class TestGuardrails(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestGuardrails(unittest.TestCase):
         mock_retriever.invoke.return_value = [candidate]
 
         # Patch rerank_with_scores to return low relevance score (0.20 < RELEVANCE_THRESHOLD 0.35)
-        with patch("hr_assistant.tools.rerank_with_scores", return_value=[(candidate, 0.20)]):
+        with patch("src.agent.tools.rerank_with_scores", return_value=[(candidate, 0.20)]):
             tool = create_guarded_search_tool(mock_vector_store)
             result = tool.invoke({"question": "What is company revenue in Q3?"})
             self.assertEqual(result, NOT_FOUND_SENTINEL)
@@ -93,7 +93,7 @@ class TestGuardrails(unittest.TestCase):
         mock_retriever.invoke.return_value = [candidate]
 
         # Patch rerank_with_scores to return high relevance score (0.88 >= 0.35)
-        with patch("hr_assistant.tools.rerank_with_scores", return_value=[(candidate, 0.88)]):
+        with patch("src.agent.tools.rerank_with_scores", return_value=[(candidate, 0.88)]):
             tool = create_guarded_search_tool(mock_vector_store)
             result = tool.invoke({"question": "How long is probation?"})
             self.assertIn("[Source: probation_policy.md] (relevance: 0.88)", result)

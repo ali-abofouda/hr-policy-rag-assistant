@@ -4,8 +4,8 @@ Exposes the agent's compiled graph so Studio can visualize and step
 through it in the browser.
 """
 
-from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import build_hr_assistant
+from src.core.logging import configure_logging
+from src.services.chat_service import build_hr_assistant
 
 configure_logging()
 

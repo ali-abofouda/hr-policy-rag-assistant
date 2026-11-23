@@ -16,7 +16,7 @@ import litellm
 from langchain_litellm import ChatLiteLLMRouter
 from litellm import Router
 
-from hr_assistant import config
+from src.core import config
 
 logger = logging.getLogger(__name__)
 

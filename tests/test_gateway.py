@@ -4,8 +4,8 @@ import unittest
 from langchain_litellm import ChatLiteLLMRouter
 from litellm import Router
 
-from hr_assistant import config
-from hr_assistant.llm import _get_router, get_llm
+from src.core import config
+from src.agent.llm import _get_router, get_llm
 
 
 class TestLLMGateway(unittest.TestCase):

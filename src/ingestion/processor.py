@@ -19,8 +19,8 @@ from docx import Document as DocxReader
 from pptx import Presentation
 from pypdf import PdfReader
 
-from hr_assistant import config
-from hr_assistant.document_loader import extract_policy_category
+from src.core import config
+from src.ingestion.document_loader import extract_policy_category
 
 logger = logging.getLogger(__name__)
 

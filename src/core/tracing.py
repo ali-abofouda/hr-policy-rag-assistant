@@ -2,7 +2,7 @@
 
 import logging
 
-from hr_assistant import config
+from src.core import config
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def check_langsmith_tracing() -> None:
 
 
 if __name__ == "__main__":
-    from hr_assistant.logging_config import configure_logging
+    from src.core.logging import configure_logging
 
     configure_logging()
     check_langsmith_tracing()

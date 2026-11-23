@@ -8,15 +8,15 @@ import time
 
 import streamlit as st
 
-from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import (
+from src.core.logging import configure_logging
+from src.services.chat_service import (
     INPUT_BLOCKED_MESSAGE,
     OUTPUT_BLOCKED_MESSAGE,
     ask,
     build_hr_assistant,
 )
-from hr_assistant.tracing import check_langsmith_tracing
-from hr_assistant import config
+from src.core.tracing import check_langsmith_tracing
+from src.core import config
 
 # ── Bootstrap (once per server start) ────────────────────────────────────────
 configure_logging()

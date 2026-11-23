@@ -18,9 +18,9 @@ from typing import Callable
 from langchain_core.tools import BaseTool, tool
 from langchain_qdrant import QdrantVectorStore
 
-from hr_assistant import config
-from hr_assistant.reranker import rerank, rerank_with_scores
-from hr_assistant.vector_store import get_retriever
+from src.core import config
+from src.retrieval.reranker import rerank, rerank_with_scores
+from src.retrieval.vector_store import get_retriever
 
 logger = logging.getLogger(__name__)
 

@@ -18,8 +18,8 @@ from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from qdrant_client import QdrantClient
 from qdrant_client.models import FieldCondition, Filter, MatchAny, PayloadSchemaType
 
-from hr_assistant import config
-from hr_assistant.embeddings import get_embeddings_model
+from src.core import config
+from src.retrieval.embeddings import get_embeddings_model
 
 logger = logging.getLogger(__name__)
 

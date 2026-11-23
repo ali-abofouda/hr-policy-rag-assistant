@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 from langchain_core.documents import Document
 
-from hr_assistant.ingestion import (
+from src.ingestion.ingestion import (
     DocumentLoaderStrategy,
     LocalHRLoaderStrategy,
     LocalNoisyCorpusLoaderStrategy,

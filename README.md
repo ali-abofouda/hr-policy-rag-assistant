@@ -16,7 +16,7 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 
 ### 2. Google Cloud Storage (GCS) Pipeline (Enterprise Reference)
 - **Cloud-Native Storage Hierarchy**: Preserves full architectural logic for GCP Cloud Storage buckets partitioned into `raw/` and `processed/` zones (`raw-hr-policies`, `raw-other-data`, `processed-hr-policies`, `processed-other-data`).
-- **Documented & Ready for Production**: Code for GCS blob streaming and upload is preserved and documented in `hr_assistant/processor.py` and `hr_assistant/document_loader.py`, ready to be activated when enterprise GCP service account credentials and billing are attached.
+- **Documented & Ready for Production**: Code for GCS blob streaming and upload is preserved and documented in `src/ingestion/processor.py` and `src/ingestion/document_loader.py`, ready to be activated when enterprise GCP service account credentials and billing are attached.
 
 ---
 
@@ -93,7 +93,6 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   └── services/           # Application orchestration services
 │       ├── chat_service.py # Core RAG turn orchestrator (ask flow)
 │       └── pipeline.py     # Backward-compatible alias
-├── hr_assistant/           # Backward-compatibility bridge (preserves all legacy imports)
 ├── data/
 │   ├── policies/           # 10 official HR policy documents (.txt)
 │   ├── noise/              # 8 synthetic enterprise distractor files (.pdf, .docx, .pptx, .txt)
@@ -147,7 +146,7 @@ Required keys:
 Execute local multi-format parsing across all policies and noise files:
 
 ```bash
-python -c "from hr_assistant.processor import process_raw_to_json; print('Processed files:', process_raw_to_json())"
+python -c "from src.ingestion.processor import process_raw_to_json; print('Processed files:', process_raw_to_json())"
 ```
 
 ### 4. Run Unit Tests

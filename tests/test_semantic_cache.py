@@ -5,8 +5,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
 
-from hr_assistant.semantic_cache import SemanticCache
-from hr_assistant import thread_memory
+from src.security.semantic_cache import SemanticCache
+from src.agent import thread_memory
 
 
 class TestSemanticCache(unittest.TestCase):

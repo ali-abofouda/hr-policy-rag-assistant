@@ -18,8 +18,8 @@ import requests
 
 from langchain_core.documents import Document
 
-from hr_assistant import config
-from hr_assistant.embeddings import get_embeddings_model
+from src.core import config
+from src.retrieval.embeddings import get_embeddings_model
 
 logger = logging.getLogger(__name__)
 

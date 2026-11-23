@@ -19,10 +19,11 @@ from typing import Dict, Any
 # Ensure hr_assistant can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from hr_assistant import config, thread_memory
-from hr_assistant.guardrails import check_input, check_output, _check_with_local_heuristics, _check_with_gemini_lite
-from hr_assistant.pipeline import build_hr_assistant, INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE
-from hr_assistant.semantic_cache import SemanticCache
+from src.core import config
+from src.agent import thread_memory
+from src.security.guardrails import check_input, check_output, _check_with_local_heuristics, _check_with_gemini_lite
+from src.services.chat_service import build_hr_assistant, INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE
+from src.security.semantic_cache import SemanticCache
 
 # Configure logger
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -104,9 +105,9 @@ def profile_turn(agent: Any, cache: SemanticCache, question: str, thread_id: str
 
 def profile_tool_internal(agent: Any, query: str) -> Dict[str, Any]:
     """Isolate and profile the internal sub-steps of create_guarded_search_tool."""
-    from hr_assistant.tools import create_guarded_search_tool
-    from hr_assistant.vector_store import load_vector_store
-    from hr_assistant.reranker import rerank_with_scores
+    from src.agent.tools import create_guarded_search_tool
+    from src.retrieval.vector_store import load_vector_store
+    from src.retrieval.reranker import rerank_with_scores
 
     vector_store = load_vector_store(config.QDRANT_COLLECTION_NAME)
     tool = create_guarded_search_tool(vector_store)

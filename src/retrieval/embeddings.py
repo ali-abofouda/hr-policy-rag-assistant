@@ -10,7 +10,7 @@ import warnings
 from typing import Any
 from langchain_core.embeddings import Embeddings
 
-from hr_assistant import config
+from src.core import config
 
 logger = logging.getLogger(__name__)
 

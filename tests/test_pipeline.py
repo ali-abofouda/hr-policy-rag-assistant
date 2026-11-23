@@ -4,8 +4,8 @@ import unittest
 from unittest.mock import MagicMock
 from langchain_core.messages import AIMessage
 
-from hr_assistant.tracing import check_langsmith_tracing
-from hr_assistant.pipeline import ask
+from src.core.tracing import check_langsmith_tracing
+from src.services.chat_service import ask
 
 
 class TestTracingAndPipeline(unittest.TestCase):

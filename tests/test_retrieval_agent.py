@@ -7,9 +7,9 @@ from langchain_core.language_models.fake_chat_models import FakeMessagesListChat
 from langchain_core.messages import AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 
-from hr_assistant.reranker import rerank
-from hr_assistant.tools import create_search_tool
-from hr_assistant.agent import create_hr_agent
+from src.retrieval.reranker import rerank
+from src.agent.tools import create_search_tool
+from src.agent.agent import create_hr_agent
 
 
 class TestRetrievalPipeline(unittest.TestCase):

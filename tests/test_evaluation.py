@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from hr_assistant.evaluation import (
+from src.evaluation.evaluation import (
     EVALUATION_DATASET,
     create_evaluators,
     get_judge_llm,
@@ -50,7 +50,7 @@ class TestEvaluationModule(unittest.TestCase):
         mock_retriever.invoke.return_value = [mock_doc]
         mock_vector_store.as_retriever.return_value = mock_retriever
 
-        with patch("hr_assistant.evaluation.ask", return_value="Employees receive 18 days."):
+        with patch("src.evaluation.evaluation.ask", return_value="Employees receive 18 days."):
             target_fn = make_target_function(mock_agent, mock_cache, mock_vector_store)
             output = target_fn({"question": "What is the annual leave entitlement?"})
 

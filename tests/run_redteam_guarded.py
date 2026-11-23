@@ -14,8 +14,8 @@ import os
 import sys
 import time
 
-from hr_assistant.logging_config import configure_logging
-from hr_assistant.pipeline import ask, build_hr_assistant, INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE
+from src.core.logging import configure_logging
+from src.services.chat_service import ask, build_hr_assistant, INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE
 
 ATTACKS = [
     (

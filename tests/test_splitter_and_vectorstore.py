@@ -3,8 +3,8 @@
 import unittest
 from langchain_core.documents import Document
 
-from hr_assistant.splitter import split_into_chunks
-from hr_assistant.vector_store import _stable_chunk_id
+from src.ingestion.splitter import split_into_chunks
+from src.retrieval.vector_store import _stable_chunk_id
 
 
 class TestSplitterAndVectorStore(unittest.TestCase):

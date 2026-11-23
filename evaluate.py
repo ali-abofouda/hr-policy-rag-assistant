@@ -8,9 +8,9 @@ Run with:
 """
 
 import sys
-from hr_assistant.logging_config import configure_logging
-from hr_assistant.tracing import check_langsmith_tracing
-from hr_assistant.evaluation import run_evaluation
+from src.core.logging import configure_logging
+from src.core.tracing import check_langsmith_tracing
+from src.evaluation.evaluation import run_evaluation
 
 
 def main():

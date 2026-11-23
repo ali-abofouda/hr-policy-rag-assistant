@@ -15,7 +15,7 @@ from typing import List, Optional, Tuple
 
 from langchain_core.documents import Document
 
-from hr_assistant import config
+from src.core import config
 
 logger = logging.getLogger(__name__)
 

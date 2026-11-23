@@ -20,14 +20,14 @@ from typing import Any, Callable, List, Optional, Protocol, runtime_checkable
 
 from langchain_core.documents import Document
 
-from hr_assistant import config
-from hr_assistant.document_loader import (
+from src.core import config
+from src.ingestion.document_loader import (
     load_documents_from_local,
     load_processed_documents_from_local,
 )
-from hr_assistant.processor import process_local_raw_to_json
-from hr_assistant.splitter import split_into_chunks
-from hr_assistant.vector_store import build_vector_store, collection_exists
+from src.ingestion.processor import process_local_raw_to_json
+from src.ingestion.splitter import split_into_chunks
+from src.retrieval.vector_store import build_vector_store, collection_exists
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ import logging
 from typing import Any, Dict, List
 from langchain_core.messages import AIMessage, HumanMessage
 
-from hr_assistant import config
+from src.core import config
 
 logger = logging.getLogger(__name__)
 

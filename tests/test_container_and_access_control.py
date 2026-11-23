@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import yaml
-from hr_assistant import config
+from src.core import config
 from app import is_auth_configured, verify_access_control
 
 PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

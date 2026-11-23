@@ -19,8 +19,8 @@ CLI Usage Examples:
 import argparse
 import sys
 
-from hr_assistant.ingestion import run_ingestion
-from hr_assistant.logging_config import configure_logging
+from src.ingestion.ingestion import run_ingestion
+from src.core.logging import configure_logging
 
 
 def parse_arguments() -> argparse.Namespace:
