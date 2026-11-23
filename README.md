@@ -53,16 +53,15 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 ├── ingest.py               # Ingestion pipeline CLI entry point
 ├── evaluate.py             # Evaluation pipeline CLI entry point
 ├── app.py                  # Streamlit web application with Google OAuth IAM
-├── src/                    # Enterprise modular package layout
+├── src/                    # Enterprise Domain-Driven RAG Package Layout
 │   ├── main.py             # FastAPI application factory and entry point
-│   ├── core/               # Enterprise configuration and logging
+│   ├── core/               # Enterprise configuration, logging & tracing
 │   │   ├── config.py       # Pydantic v2 BaseSettings with strict validation
 │   │   ├── logging.py      # Structured cloud-ready logger
-│   │   └── __init__.py
+│   │   └── tracing.py      # LangSmith observability & tracing
 │   ├── schemas/            # Strict Pydantic v2 Data Transfer Objects (DTOs)
 │   │   ├── chat.py         # ChatRequest, Citation, ChatResponse
-│   │   ├── health.py       # ComponentStatus, HealthResponse
-│   │   └── __init__.py
+│   │   └── health.py       # ComponentStatus, HealthResponse
 │   ├── api/                # FastAPI dependency injection & routers
 │   │   ├── deps.py         # Singleton assistant dependency provider
 │   │   └── v1/
@@ -70,14 +69,30 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   │       └── endpoints/
 │   │           ├── chat.py # POST /api/v1/chat (Grounded RAG REST endpoint)
 │   │           └── health.py # GET /health & GET /api/v1/health probe
-│   └── services/           # Decoupled core business logic
-│       ├── agent.py        # LangGraph agent graph
-│       ├── pipeline.py     # Secure ask() pipeline with screening & caching
-│       ├── guardrails.py   # Input/output safety screening
-│       ├── semantic_cache.py # Semantic caching engine
-│       ├── embeddings.py   # Hybrid embeddings with ONNX fallback
-│       ├── vector_store.py # Qdrant client & healthcheck probe
-│       └── reranker.py     # High-precision Cross-Encoder
+│   ├── ingestion/          # Data ETL domain (parsing, loading, chunking)
+│   │   ├── processor.py    # Multi-format binary parser (.pdf, .docx, .pptx, .txt)
+│   │   ├── document_loader.py # Local & cloud storage document loaders
+│   │   ├── splitter.py     # Recursive character text splitting
+│   │   └── ingestion.py    # Dual-pipeline ingestion orchestrator
+│   ├── retrieval/          # Search & vector storage domain
+│   │   ├── embeddings.py   # Hybrid embeddings with local FastEmbed ONNX fallback
+│   │   ├── vector_store.py # Qdrant Cloud client, hybrid collections & healthcheck
+│   │   └── reranker.py     # Cross-Encoder high-precision reranker
+│   ├── security/           # Reliability & defense domain
+│   │   ├── guardrails.py   # Input/output safety guardrails & Model Armor
+│   │   └── semantic_cache.py # In-memory semantic cache with cosine similarity
+│   ├── agent/              # Reasoning & LLM gateway domain
+│   │   ├── agent.py        # LangGraph ReAct state machine
+│   │   ├── tools.py        # Retriever-as-a-tool pattern ('search_hr_policy')
+│   │   ├── prompts.py      # System prompts & behavioral guidelines
+│   │   ├── thread_memory.py# Conversational session memory
+│   │   ├── llm.py          # LiteLLM router & fallback model provider
+│   │   └── studio_graph.py # LangGraph Studio visualization graph
+│   ├── evaluation/         # Quality assurance & evaluation domain
+│   │   └── evaluation.py   # RAG Triad metrics & judge evaluation
+│   └── services/           # Application orchestration services
+│       ├── chat_service.py # Core RAG turn orchestrator (ask flow)
+│       └── pipeline.py     # Backward-compatible alias
 ├── hr_assistant/           # Backward-compatibility bridge (preserves all legacy imports)
 ├── data/
 │   ├── policies/           # 10 official HR policy documents (.txt)
@@ -88,6 +103,11 @@ The project is architected with a **Dual Pipeline Design**, allowing developers 
 │   ├── test_app.py         # Streamlit AppTest integration
 │   ├── test_container_and_access_control.py
 │   ├── test_pipeline.py
+│   ├── test_guardrails.py
+│   ├── test_semantic_cache.py
+│   └── ...
+└── hrrenv/                 # Isolated Python 3.12 virtual environment
+```
 │   ├── test_guardrails.py
 │   ├── test_semantic_cache.py
 │   └── ...

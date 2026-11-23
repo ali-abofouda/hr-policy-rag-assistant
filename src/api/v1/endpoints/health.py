@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter
 from src.core.config import settings
+from src.retrieval.vector_store import check_qdrant_health
 from src.schemas.health import ComponentStatus, HealthResponse
-from src.services.vector_store import check_qdrant_health
 
 router = APIRouter(tags=["Health"])
 

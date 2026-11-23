@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, status
 
 from src.api.deps import get_assistant
 from src.schemas.chat import ChatRequest, ChatResponse, Citation
-from src.services.pipeline import ask
-from src.services.semantic_cache import SemanticCache
+from src.security.semantic_cache import SemanticCache
+from src.services.chat_service import ask
 
 router = APIRouter(tags=["Chat"])
 

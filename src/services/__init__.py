@@ -1,26 +1,23 @@
-"""HR Policy RAG Assistant package."""
+"""src/services/ package — Application Orchestration Services."""
 
-from hr_assistant import config
-from hr_assistant.llm import get_llm
-from hr_assistant.reranker import rerank, rerank_with_scores
-from hr_assistant.tools import create_search_tool, create_guarded_search_tool, NOT_FOUND_SENTINEL
-from hr_assistant.agent import create_hr_agent, create_reliability_agent
-from hr_assistant.guardrails import check_input, check_output
-from hr_assistant.semantic_cache import SemanticCache
-from hr_assistant import thread_memory
+from src.services.chat_service import (
+    INPUT_BLOCKED_MESSAGE,
+    OUTPUT_BLOCKED_MESSAGE,
+    ask,
+    ask_plain,
+    ask_reliably,
+    build_hr_assistant,
+    build_plain_assistant,
+    build_reliability_assistant,
+)
 
 __all__ = [
-    "config",
-    "get_llm",
-    "rerank",
-    "rerank_with_scores",
-    "create_search_tool",
-    "create_guarded_search_tool",
-    "NOT_FOUND_SENTINEL",
-    "create_hr_agent",
-    "create_reliability_agent",
-    "check_input",
-    "check_output",
-    "SemanticCache",
-    "thread_memory",
+    "ask",
+    "ask_plain",
+    "ask_reliably",
+    "build_hr_assistant",
+    "build_plain_assistant",
+    "build_reliability_assistant",
+    "INPUT_BLOCKED_MESSAGE",
+    "OUTPUT_BLOCKED_MESSAGE",
 ]
