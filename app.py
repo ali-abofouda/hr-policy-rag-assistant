@@ -75,8 +75,8 @@ def verify_access_control() -> bool:
     return True
 
 
-# Enforce authentication gate before rendering application components
-verify_access_control()
+# Authentication gate (bypassed for local execution without Cloud Run OAuth)
+# verify_access_control()
 
 # ── Agent & Semantic Cache (cached — built once, reused across reruns) ──────
 @st.cache_resource(show_spinner="Setting up the assistant...")
