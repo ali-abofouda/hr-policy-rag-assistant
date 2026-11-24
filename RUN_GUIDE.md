@@ -37,7 +37,24 @@ Run the human-facing chat interface directly:
 
 ---
 
-## 3. Production FastAPI REST Service
+## 3. LangGraph Studio & Visual State Tracing
+
+Launch the official LangGraph Studio visual canvas and state inspector directly:
+
+```powershell
+# Launch LangGraph Studio development server
+.\hrrenv\Scripts\langgraph dev
+```
+
+- **Configuration:** Reads `langgraph.json` pointing to compiled StateGraph in `src/agent/studio_graph.py`.
+- **Capabilities:**
+  - Interactive browser graph canvas rendering (`__start__` -> `model` -> `tools` -> `__end__`).
+  - Real-time streaming and node transition animations.
+  - Step-by-step state, message history, and checkpoint inspection.
+
+---
+
+## 4. Production FastAPI REST Service
 
 Run the high-performance async REST API server powered by Uvicorn:
 
@@ -67,7 +84,7 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/query" `
 
 ---
 
-## 4. Knowledge Ingestion Pipeline
+## 5. Knowledge Ingestion Pipeline
 
 Process policy documents, chunk text, generate dense and sparse embeddings, and synchronize vectors into Qdrant:
 
@@ -81,7 +98,7 @@ Process policy documents, chunk text, generate dense and sparse embeddings, and 
 
 ---
 
-## 5. Automated RAG Triad Evaluation Pipeline
+## 6. Automated RAG Triad Evaluation Pipeline
 
 Run automated offline evaluation against ground-truth datasets to compute Faithfulness, Answer Relevance, and Context Precision:
 
@@ -94,7 +111,7 @@ Evaluation summaries and CSV trace reports are written to the `evaluation/` dire
 
 ---
 
-## 6. Automated Unit and Integration Test Suite
+## 7. Automated Unit and Integration Test Suite
 
 Execute the comprehensive 53-test test suite covering core domain services, safety guardrails, semantic caching, vector stores, and REST endpoints:
 
@@ -116,7 +133,7 @@ To run a single test module:
 
 ---
 
-## 7. Docker and Docker Compose (Multi-Container Execution)
+## 8. Docker and Docker Compose (Multi-Container Execution)
 
 Run microservices using the official container architecture:
 
@@ -142,9 +159,10 @@ docker compose down
 
 ---
 
-## 8. Summary of Ports and Default URLs
+## 9. Summary of Ports and Default URLs
 
 - **Streamlit Frontend:** `http://localhost:8501`
+- **LangGraph Studio:** `http://localhost:2024`
 - **FastAPI REST API:** `http://localhost:8000`
 - **Swagger Documentation:** `http://localhost:8000/docs`
 - **Health Probe:** `http://localhost:8000/health`
