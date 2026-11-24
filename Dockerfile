@@ -26,8 +26,10 @@ RUN uv pip install --system --no-cache -r requirements.txt
 # to eliminate cold-start latency when running on serverless Google Cloud Run
 RUN python -c "from fastembed import SparseTextEmbedding; SparseTextEmbedding(model_name='Qdrant/bm25')"
 
-# Copy application packages and data directory
+# Copy application packages, modules, and data directory
 COPY src/ ./src/
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
 COPY data/ ./data/
 
 # Copy standalone runtime entrypoints

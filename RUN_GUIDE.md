@@ -1,6 +1,6 @@
 # Execution and Run Guide: HR Policy RAG Assistant
 
-This guide details all execution commands, endpoints, and operational workflows for running, testing, and deploying the HR Policy Assistant locally on Windows or within Docker containers.
+This guide details all execution commands, endpoints, and operational workflows for running, testing, and deploying the HR Policy Assistant under its Hexagonal Architecture (Ports & Adapters) locally on Windows or within Docker containers.
 
 ---
 
@@ -27,7 +27,10 @@ Verify your environment configuration file (`.env`):
 Run the human-facing chat interface directly:
 
 ```powershell
-# Launch Streamlit with auto-reloading
+# Launch Streamlit frontend with auto-reloading
+.\hrrenv\Scripts\streamlit run frontend/app.py
+
+# Alternatively via root forwarder
 .\hrrenv\Scripts\streamlit run app.py
 ```
 
@@ -37,12 +40,15 @@ Run the human-facing chat interface directly:
 
 ---
 
-## 3. Production FastAPI REST Service
+## 3. Production FastAPI REST Service (Hexagonal Backend)
 
-Run the high-performance async REST API server powered by Uvicorn:
+Run the high-performance async REST API server powered by Uvicorn and Composition Root dependency injection:
 
 ```powershell
-# Launch Uvicorn with auto-reload on port 8000
+# Launch Uvicorn with auto-reload on port 8000 (Hexagonal Backend)
+.\hrrenv\Scripts\uvicorn backend.app.main:app --reload --port 8000
+
+# Legacy compatibility command also supported
 .\hrrenv\Scripts\uvicorn src.main:app --reload --port 8000
 ```
 
@@ -52,17 +58,17 @@ Run the high-performance async REST API server powered by Uvicorn:
 | :--- | :--- | :--- |
 | `http://127.0.0.1:8000/docs` | `GET` | Interactive Swagger UI documentation |
 | `http://127.0.0.1:8000/redoc` | `GET` | ReDoc API specifications |
-| `http://127.0.0.1:8000/health` | `GET` | Health check and subsystem latency |
-| `http://127.0.0.1:8000/api/v1/query` | `POST` | Primary RAG generation query endpoint |
-| `http://127.0.0.1:8000/api/v1/feedback` | `POST` | User feedback collection endpoint |
+| `http://127.0.0.1:8000/health` | `GET` | Health check and subsystem readiness |
+| `http://127.0.0.1:8000/api/v1/chat` | `POST` | Primary Hexagonal RAG chat endpoint |
+| `http://127.0.0.1:8000/api/v1/query` | `POST` | Legacy query compatibility endpoint |
 
-### Example Query Request (PowerShell / curl)
+### Example Query Request (PowerShell)
 
 ```powershell
-Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/query" `
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/chat" `
   -Method POST `
   -Headers @{ "Content-Type" = "application/json" } `
-  -Body '{"query": "How many days of annual leave do I get?", "department": "Engineering"}'
+  -Body '{"query": "How many days of paid annual leave do I get?", "thread_id": "session-1"}'
 ```
 
 ---
@@ -81,22 +87,23 @@ Process policy documents, chunk text, generate dense and sparse embeddings, and 
 
 ---
 
-## 5. Automated RAG Triad Evaluation Pipeline
+## 5. Automated Evaluation Subsystem (`backend/eval`)
 
-Run automated offline evaluation against ground-truth datasets to compute Faithfulness, Answer Relevance, and Context Precision:
+Run automated offline evaluation against the golden dataset using Markdown-based judge prompts (`backend/eval/prompts/`):
 
 ```powershell
-# Run evaluation across evaluation dataset
+# Run evaluation suite via backend runner
+.\hrrenv\Scripts\python backend/eval/run_eval.py
+
+# Legacy root runner also supported
 .\hrrenv\Scripts\python evaluate.py
 ```
-
-Evaluation summaries and CSV trace reports are written to the `evaluation/` directory.
 
 ---
 
 ## 6. Automated Unit and Integration Test Suite
 
-Execute the comprehensive 53-test test suite covering core domain services, safety guardrails, semantic caching, vector stores, and REST endpoints:
+Execute the comprehensive 57-test test suite covering domain ports, infrastructure adapters, safety guardrails, semantic caching, vector stores, and REST endpoints:
 
 ```powershell
 # Execute full test suite via unittest discovery
@@ -104,14 +111,10 @@ $env:PYTHONPATH="."
 .\hrrenv\Scripts\python -m unittest discover -s tests -p "test_*.py"
 ```
 
-To run a single test module:
+To run only the Hexagonal Architecture tests:
 
 ```powershell
-# Example: Run container and access control tests
-.\hrrenv\Scripts\python -m unittest tests/test_container_and_access_control.py
-
-# Example: Run REST API router tests
-.\hrrenv\Scripts\python -m unittest tests/test_api.py
+.\hrrenv\Scripts\python -m unittest tests/test_hexagonal_architecture.py
 ```
 
 ---

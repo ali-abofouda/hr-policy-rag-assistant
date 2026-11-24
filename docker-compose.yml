@@ -20,7 +20,7 @@ services:
       - PORT=8080
     restart: unless-stopped
     command: >
-      streamlit run app.py
+      streamlit run frontend/app.py
       --server.port=8080
       --server.address=0.0.0.0
       --server.headless=true
@@ -40,7 +40,7 @@ services:
       - PORT=8000
     restart: unless-stopped
     command: >
-      uvicorn src.main:app
+      uvicorn backend.app.main:app
       --host 0.0.0.0
       --port 8000
 
@@ -64,4 +64,4 @@ services:
       - .env
     profiles:
       - tools
-    command: python evaluate.py
+    command: python backend/eval/run_eval.py
