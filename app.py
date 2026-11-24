@@ -190,15 +190,23 @@ if user_prompt:
 
     with st.chat_message("assistant"):
         with st.spinner("Searching policies..."):
+            was_cached = (cache.lookup(user_prompt) is not None)
             t0 = time.time()
             answer = ask(agent, cache, user_prompt, thread_id=st.session_state.thread_id)
             dt = time.time() - t0
 
-        if answer in (INPUT_BLOCKED_MESSAGE, OUTPUT_BLOCKED_MESSAGE):
-            st.warning(answer)
+        if answer == INPUT_BLOCKED_MESSAGE:
+            st.error(answer)
+            st.caption("Blocked by input guardrail")
+        elif answer == OUTPUT_BLOCKED_MESSAGE:
+            st.error(answer)
+            st.caption("Blocked by output guardrail")
         else:
             st.markdown(answer)
-        st.caption(f"Answered in {dt:.1f}s")
+            if was_cached or dt < 0.25:
+                st.caption(f"Semantic Cache Hit (instant, {dt:.3f}s)")
+            else:
+                st.caption(f"Retrieved via RAG pipeline ({dt:.1f}s)")
 
     # Only append to session transcript if the prompt was not blocked at input
     if answer != INPUT_BLOCKED_MESSAGE:
