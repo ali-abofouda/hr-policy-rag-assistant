@@ -10,7 +10,7 @@ from src.services.chat_service import build_hr_assistant
 configure_logging()
 
 # نمرر checkpointer=False لأن استوديو يدير الذاكرة وتخزين الجلسات بنفسه
-agent = build_hr_assistant(checkpointer=False)
+agent, _ = build_hr_assistant(checkpointer=False)
 
 # يشير ملف langgraph.json إلى هذا المتغير الصريح
 graph = agent
